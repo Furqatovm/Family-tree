@@ -15,7 +15,7 @@ class Person(db.Model):
     birthplace = db.Column(db.String(100), nullable=True)
     occupation = db.Column(db.String(100), nullable=True)
     biography = db.Column(db.Text, nullable=True)
-    photo_url = db.Column(db.String(255), nullable=True)
+    photo_url = db.Column(db.Text, nullable=True)
     current_lat = db.Column(db.Float, nullable=True)
     current_lng = db.Column(db.Float, nullable=True)
     current_location_name = db.Column(db.String(150), nullable=True)
