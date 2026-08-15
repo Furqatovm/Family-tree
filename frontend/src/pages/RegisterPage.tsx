@@ -23,7 +23,6 @@ export const RegisterPage: React.FC = () => {
   const [step, setStep] = useState<'details' | 'verify'>('details');
   const [formData, setFormData] = useState<RegisterFormData | null>(null);
   const [verificationCode, setVerificationCode] = useState<string>('');
-  const [devCode, setDevCode] = useState<string | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -46,14 +45,11 @@ export const RegisterPage: React.FC = () => {
     try {
       const res = await authApi.sendVerificationCode(data.email);
       setFormData(data);
-      if (res.dev_code) {
-        setDevCode(res.dev_code);
-        setVerificationCode(res.dev_code);
-      }
+      setVerificationCode('');
       setStep('verify');
       toast.success(
         'Kod emailingizga yuborildi!',
-        `${data.email} pochtangizga 6-xonali kod jo'natildi.`
+        res.message || `${data.email} pochtangizga 6-xonali kod jo'natildi. Pochtangizni tekshiring.`
       );
     } catch (err: any) {
       const msg = err.response?.data?.error || 'Tasdiqlash kodini yuborishda xatolik yuz berdi';
@@ -187,21 +183,6 @@ export const RegisterPage: React.FC = () => {
                 <span>⚠️</span>
                 <span>Pochtangizni yoki spam papkani tekshiring</span>
               </div>
-              {devCode && (
-                <div className="bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs p-3 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-emerald-700 block">Tasdiqlash kodi:</span>
-                    <strong className="font-mono text-base tracking-widest text-emerald-900">{devCode}</strong>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setVerificationCode(devCode)}
-                    className="text-xs bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-semibold hover:bg-emerald-800 transition"
-                  >
-                    Avto-to'ldirish
-                  </button>
-                </div>
-              )}
             </div>
 
             <Input

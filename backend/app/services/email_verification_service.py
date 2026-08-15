@@ -92,15 +92,16 @@ def _build_email_html(code: str, email: str, expires_at: datetime) -> str:
 """
 
 
-def _send_email(to_email: str, subject: str, html_body: str) -> bool:
-    """Send email via Gmail SMTP. Returns True on success, False on failure."""
+def _send_email(to_email: str, subject: str, html_body: str) -> tuple[bool, str]:
+    """Send email via Gmail SMTP. Returns (success: bool, error_message: str)."""
     # Read fresh from env on every call (so .env changes are picked up)
     sender = os.environ.get('MAIL_SENDER_EMAIL', 'muhammadyusuffurqatov91@gmail.com')
-    password = os.environ.get('MAIL_APP_PASSWORD', '')
+    password = os.environ.get('MAIL_APP_PASSWORD', '').strip()
 
     if not password:
-        print(f"[WARNING] MAIL_APP_PASSWORD not set in .env. Email NOT sent to {to_email}.")
-        return False
+        err = "Serverda pochta sozlamalari topilmadi. Render Environment-da MAIL_APP_PASSWORD o'rnatilishi shart."
+        print(f"[ERROR] {err}")
+        return False, err
 
     try:
         msg = MIMEMultipart('alternative')
@@ -119,14 +120,16 @@ def _send_email(to_email: str, subject: str, html_body: str) -> bool:
             server.sendmail(sender, to_email, msg.as_string())
 
         print(f"[EMAIL] OTP sent successfully to {to_email}")
-        return True
+        return True, ""
 
-    except smtplib.SMTPAuthenticationError:
-        print(f"[ERROR] Gmail authentication failed. Check MAIL_APP_PASSWORD in .env")
-        return False
+    except smtplib.SMTPAuthenticationError as e:
+        err = "Gmail paroli (MAIL_APP_PASSWORD) xato kiritilgan yoki 2-bosqichli tasdiqlash yoqilmagan."
+        print(f"[ERROR] {err}: {e}")
+        return False, err
     except Exception as e:
-        print(f"[ERROR] Failed to send email to {to_email}: {e}")
-        return False
+        err = f"Email jo'natishda xatolik yuz berdi: {str(e)}"
+        print(f"[ERROR] {err}")
+        return False, err
 
 
 def _safe_print(*args, **kwargs):
@@ -161,19 +164,17 @@ class EmailVerificationService:
         # 4. Send real email via Gmail SMTP
         subject = "FamilyTree - Elektron pochta tasdiqlash kodi"
         html = _build_email_html(code, email_clean, expires_at)
-        email_sent = _send_email(email_clean, subject, html)
+        success, error_msg = _send_email(email_clean, subject, html)
 
-        # 5. Always log to terminal (dev fallback)
-        _safe_print(f"\n==========================================")
-        _safe_print(f"[EMAIL OTP] To: {email_clean}")
-        _safe_print(f"[CODE] {code}")
-        _safe_print(f"[STATUS] {'Email sent' if email_sent else 'Email NOT sent - check MAIL_APP_PASSWORD in .env'}")
-        _safe_print(f"==========================================\n")
+        if not success:
+            # Clean up verification code so unverified code can't be used
+            VERIFICATION_CODES.pop(email_clean, None)
+            raise RuntimeError(error_msg)
+
+        _safe_print(f"[EMAIL OTP] Real email sent to: {email_clean}")
 
         return {
-            'message': f"6-xonali tasdiqlash kodi {email_clean} manziliga yuborildi",
-            'dev_code': code,
-            'email_sent': email_sent
+            'message': f"6-xonali tasdiqlash kodi {email_clean} pochtangizga muvaffaqiyatli yuborildi. Iltimos pochtangizni tekshiring.",
         }
 
     @staticmethod

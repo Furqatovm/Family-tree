@@ -145,19 +145,15 @@ class PasswordResetService:
         # Send email
         subject = "FamilyTree - Parolni tiklash kodi"
         html = _build_reset_email_html(code, email_clean, expires_at)
-        sent = _send_email(email_clean, subject, html)
+        sent, error_msg = _send_email(email_clean, subject, html)
 
-        _safe_print(f"\n==========================================")
-        _safe_print(f"[RESET OTP] To: {email_clean}")
-        _safe_print(f"[CODE] {code}")
-        _safe_print(f"[STATUS] {'Sent' if sent else 'NOT sent - check MAIL_APP_PASSWORD'}")
-        _safe_print(f"==========================================\n")
+        if not sent:
+            RESET_CODES.pop(email_clean, None)
+            raise RuntimeError(error_msg)
 
-        return {
-            'message': 'Parol tiklash kodi emailingizga yuborildi. Spam papkani ham tekshiring.',
-            'dev_code': code,
-            'email_sent': sent
-        }
+        _safe_print(f"[RESET OTP] Real email sent to: {email_clean}")
+
+        return {'message': f"Parol tiklash kodi {email_clean} pochtangizga yuborildi. Iltimos emailingizni tekshiring."}
 
     @staticmethod
     def verify_and_reset_password(email: str, code: str, new_password: str):

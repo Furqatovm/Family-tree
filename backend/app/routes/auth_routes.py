@@ -22,10 +22,10 @@ def send_code():
     try:
         res = EmailVerificationService.send_code(email)
         return jsonify(res), 200
-    except ValueError as err:
+    except (ValueError, RuntimeError) as err:
         return jsonify({'error': str(err)}), 400
     except Exception as err:
-        return jsonify({'error': 'Tasdiqlash kodini yuborishda xatolik', 'details': str(err)}), 500
+        return jsonify({'error': f'Tasdiqlash kodini yuborishda xatolik: {str(err)}'}), 500
 
 @auth_bp.route('/verify-and-register', methods=['POST'])
 def verify_and_register():
