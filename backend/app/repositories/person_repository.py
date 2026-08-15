@@ -12,32 +12,46 @@ class PersonRepository:
 
     @staticmethod
     def create(family_id, first_name, last_name, gender, middle_name=None, date_of_birth=None, date_of_death=None, birthplace=None, occupation=None, biography=None, photo_url=None, current_lat=None, current_lng=None, current_location_name=None, status_message=None):
+        lat_float = None
+        lng_float = None
+        if current_lat is not None and str(current_lat).strip() != '':
+            try:
+                lat_float = float(current_lat)
+            except (ValueError, TypeError):
+                lat_float = None
+
+        if current_lng is not None and str(current_lng).strip() != '':
+            try:
+                lng_float = float(current_lng)
+            except (ValueError, TypeError):
+                lng_float = None
+
         person = Person(
             family_id=family_id,
             first_name=first_name,
-            middle_name=middle_name,
+            middle_name=middle_name or None,
             last_name=last_name,
-            gender=gender,
-            date_of_birth=date_of_birth,
-            date_of_death=date_of_death,
-            birthplace=birthplace,
-            occupation=occupation,
-            biography=biography,
-            photo_url=photo_url,
-            current_lat=current_lat,
-            current_lng=current_lng,
-            current_location_name=current_location_name,
-            status_message=status_message
+            gender=gender or 'other',
+            date_of_birth=date_of_birth or None,
+            date_of_death=date_of_death or None,
+            birthplace=birthplace or None,
+            occupation=occupation or None,
+            biography=biography or None,
+            photo_url=photo_url or None,
+            current_lat=lat_float,
+            current_lng=lng_float,
+            current_location_name=current_location_name or None,
+            status_message=status_message or None
         )
         db.session.add(person)
         db.session.commit()
 
-        if current_lat is not None and current_lng is not None:
+        if lat_float is not None and lng_float is not None:
             from app.models.location_history import LocationHistory
             history = LocationHistory(
                 person_id=person.id,
-                latitude=current_lat,
-                longitude=current_lng,
+                latitude=lat_float,
+                longitude=lng_float,
                 location_name=current_location_name,
                 status_message=status_message
             )
@@ -80,7 +94,15 @@ class PersonRepository:
     def update(person, data):
         for key, value in data.items():
             if hasattr(person, key):
-                setattr(person, key, value)
+                if key in ['current_lat', 'current_lng']:
+                    try:
+                        val_float = float(value) if value is not None and str(value).strip() != '' else None
+                    except (ValueError, TypeError):
+                        val_float = None
+                    setattr(person, key, val_float)
+                else:
+                    val_cleaned = None if (isinstance(value, str) and value.strip() == '') else value
+                    setattr(person, key, val_cleaned)
         db.session.commit()
         return person
 

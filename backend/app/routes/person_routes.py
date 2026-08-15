@@ -21,6 +21,8 @@ def get_people(family_id):
         return jsonify({'error': str(err)}), 404
     except PermissionError as err:
         return jsonify({'error': str(err)}), 403
+    except Exception as err:
+        return jsonify({'error': str(err)}), 500
 
 @person_bp.route('/families/<int:family_id>/people', methods=['POST'])
 @jwt_required()
@@ -35,9 +37,13 @@ def create_person(family_id):
         person = PersonService.create_person(family_id, data, user_id)
         return jsonify(person), 201
     except ValueError as err:
-        return jsonify({'error': str(err)}), 404
+        return jsonify({'error': str(err)}), 400
     except PermissionError as err:
         return jsonify({'error': str(err)}), 403
+    except Exception as err:
+        from app.extensions import db
+        db.session.rollback()
+        return jsonify({'error': f'Inson qo\'shishda xatolik: {str(err)}'}), 500
 
 @person_bp.route('/people/<int:person_id>', methods=['GET'])
 @jwt_required()
