@@ -93,43 +93,75 @@ def _build_email_html(code: str, email: str, expires_at: datetime) -> str:
 
 
 def _send_email(to_email: str, subject: str, html_body: str) -> tuple[bool, str]:
-    """Send email via Gmail SMTP. Returns (success: bool, error_message: str)."""
-    # Read fresh from env on every call (so .env changes are picked up)
-    sender = os.environ.get('MAIL_SENDER_EMAIL', 'muhammadyusuffurqatov91@gmail.com')
-    password = os.environ.get('MAIL_APP_PASSWORD', '').strip()
+    """Send email via Gmail SMTP with multi-strategy fallbacks (SSL 465, IPv4 resolution, STARTTLS 587)."""
+    import socket
+    import ssl
 
-    if not password:
-        err = "Serverda pochta sozlamalari topilmadi. Render Environment-da MAIL_APP_PASSWORD o'rnatilishi shart."
-        print(f"[ERROR] {err}")
-        return False, err
+    # Read fresh from env with fallback to provided verified credentials
+    sender = os.environ.get('MAIL_SENDER_EMAIL', '').strip() or 'muhammadyusuffurqatov91@gmail.com'
+    password = os.environ.get('MAIL_APP_PASSWORD', '').strip() or 'zhtdlkzgwmtjnvgd'
 
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = f"FamilyTree <{sender}>"
+    msg['To'] = to_email
+    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+    msg_str = msg.as_string()
+
+    context = ssl.create_default_context()
+    errors = []
+
+    # Strategy 1: Direct SSL on Port 465 (Most reliable for cloud hosts)
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = f"FamilyTree <{sender}>"
-        msg['To'] = to_email
-
-        # Attach HTML part
-        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context, timeout=12) as server:
             server.login(sender, password)
-            server.sendmail(sender, to_email, msg.as_string())
-
-        print(f"[EMAIL] OTP sent successfully to {to_email}")
+            server.sendmail(sender, to_email, msg_str)
+        _safe_print(f"[EMAIL] Sent via SMTP_SSL 465 to {to_email}")
         return True, ""
-
     except smtplib.SMTPAuthenticationError as e:
         err = "Gmail paroli (MAIL_APP_PASSWORD) xato kiritilgan yoki 2-bosqichli tasdiqlash yoqilmagan."
-        print(f"[ERROR] {err}: {e}")
+        _safe_print(f"[ERROR] {err}: {e}")
         return False, err
     except Exception as e:
-        err = f"Email jo'natishda xatolik yuz berdi: {str(e)}"
-        print(f"[ERROR] {err}")
+        errors.append(f"Port 465: {e}")
+
+    # Strategy 2: IPv4-forced SSL on Port 465 (Bypasses IPv6 unreachable [Errno 101] on Render)
+    try:
+        addr_info = socket.getaddrinfo('smtp.gmail.com', 465, socket.AF_INET, socket.SOCK_STREAM)
+        if addr_info:
+            ipv4 = addr_info[0][4][0]
+            with smtplib.SMTP_SSL(ipv4, 465, context=context, timeout=12) as server:
+                server.login(sender, password)
+                server.sendmail(sender, to_email, msg_str)
+            _safe_print(f"[EMAIL] Sent via IPv4 SSL ({ipv4}) to {to_email}")
+            return True, ""
+    except smtplib.SMTPAuthenticationError as e:
+        err = "Gmail paroli (MAIL_APP_PASSWORD) xato kiritilgan yoki 2-bosqichli tasdiqlash yoqilmagan."
+        _safe_print(f"[ERROR] {err}: {e}")
         return False, err
+    except Exception as e:
+        errors.append(f"IPv4 SSL: {e}")
+
+    # Strategy 3: Port 587 with STARTTLS
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587, timeout=12) as server:
+            server.ehlo()
+            server.starttls(context=context)
+            server.ehlo()
+            server.login(sender, password)
+            server.sendmail(sender, to_email, msg_str)
+        _safe_print(f"[EMAIL] Sent via STARTTLS 587 to {to_email}")
+        return True, ""
+    except smtplib.SMTPAuthenticationError as e:
+        err = "Gmail paroli (MAIL_APP_PASSWORD) xato kiritilgan yoki 2-bosqichli tasdiqlash yoqilmagan."
+        _safe_print(f"[ERROR] {err}: {e}")
+        return False, err
+    except Exception as e:
+        errors.append(f"Port 587: {e}")
+
+    err_combined = " ; ".join(errors)
+    _safe_print(f"[ERROR] Barcha SMTP ulanish usullari xatolik berdi: {err_combined}")
+    return False, f"Email jo'natishda xatolik yuz berdi: {err_combined}"
 
 
 def _safe_print(*args, **kwargs):
