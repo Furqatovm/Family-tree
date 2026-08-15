@@ -39,7 +39,7 @@ export const OrganicTreeCanvas: React.FC<OrganicTreeCanvasProps> = ({
     let minY = Infinity;
     let maxY = -Infinity;
 
-    layout.nodes.forEach((n) => {
+    layout.nodes.forEach((n: OrganicTreeNode) => {
       if (n.x < minX) minX = n.x;
       if (n.x > maxX) maxX = n.x;
       if (n.y < minY) minY = n.y;
@@ -259,7 +259,7 @@ export const OrganicTreeCanvas: React.FC<OrganicTreeCanvasProps> = ({
               )}
 
               {/* Curved SVG Branches for Each Generation */}
-              {layout.nodes.map((node) => {
+              {layout.nodes.map((node: OrganicTreeNode) => {
                 if (!node.branchPath) return null;
 
                 const isPathHighlighted =
@@ -329,7 +329,7 @@ export const OrganicTreeCanvas: React.FC<OrganicTreeCanvasProps> = ({
                 top: 0,
               }}
             >
-              {layout.nodes.map((treeNode) => (
+              {layout.nodes.map((treeNode: OrganicTreeNode) => (
                 <OrganicPersonNode
                   key={`person-${treeNode.person.id}`}
                   treeNode={treeNode}

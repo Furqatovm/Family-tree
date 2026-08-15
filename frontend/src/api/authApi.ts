@@ -55,7 +55,7 @@ export const authApi = {
     const res = await api.post('/auth/subscribe', { plan_tier });
     return res.data;
   },
-  forgotPassword: async (email: string): Promise<{ message: string }> => {
+  forgotPassword: async (email: string): Promise<{ message: string; dev_code?: string; email_sent?: boolean }> => {
     const res = await api.post('/auth/forgot-password', { email });
     return res.data;
   },
