@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -31,13 +31,70 @@ export const UserProfilePage: React.FC = () => {
 
   // Avatar selector state
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [customAvatarUrl, setCustomAvatarUrl] = useState('');
+  const [customAvatarUrl, setCustomAvatarUrl] = useState(user?.avatar_url || '');
+
+  useEffect(() => {
+    if (user?.avatar_url) {
+      setCustomAvatarUrl(user.avatar_url);
+    }
+  }, [user]);
 
   // Fetch user's families
   const { data: families = [], isLoading: isLoadingFamilies } = useQuery({
     queryKey: ['families'],
     queryFn: familyApi.getFamilies,
   });
+
+  const handleSaveAvatar = async (newUrl: string) => {
+    setCustomAvatarUrl(newUrl);
+    setIsAvatarModalOpen(false);
+    try {
+      await authApi.updateProfile({ avatar_url: newUrl });
+      await refetchUser();
+      antMessage.success("Profil rasmi muvaffaqiyatli saqlandi! 📸");
+    } catch (err: any) {
+      const errMsg = err?.response?.data?.error || "Rasmni saqlashda xatolik";
+      antMessage.error(errMsg);
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      antMessage.error("Rasm hajmi 10MB dan oshmasligi kerak");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxSize = 400;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+        handleSaveAvatar(compressedBase64);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +109,7 @@ export const UserProfilePage: React.FC = () => {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         email: email.trim(),
+        avatar_url: customAvatarUrl || undefined,
       });
       await refetchUser();
       setIsEditing(false);
@@ -426,29 +484,14 @@ export const UserProfilePage: React.FC = () => {
               type="file"
               accept="image/*"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                if (file.size > 8 * 1024 * 1024) {
-                  antMessage.error("Rasm hajmi 8MB dan oshmasligi kerak");
-                  return;
-                }
-                const reader = new FileReader();
-                reader.onload = () => {
-                  const base64Url = reader.result as string;
-                  setCustomAvatarUrl(base64Url);
-                  setIsAvatarModalOpen(false);
-                  antMessage.success("Kompyuterdan rasm muvaffaqiyatli yuklandi! 📸");
-                };
-                reader.readAsDataURL(file);
-              }}
+              onChange={handleFileUpload}
             />
             <div className="w-12 h-12 rounded-full bg-[#3F6B4F] text-white flex items-center justify-center mx-auto shadow-md group-hover:scale-110 transition-transform">
               <Camera className="w-6 h-6" />
             </div>
             <div>
               <p className="text-xs font-bold text-[#1C1917]">💻 Kompyuterdan Rasm Yuklash (Choose File from PC)</p>
-              <p className="text-[10px] text-[#78716C] mt-0.5">PNG, JPG, WEBP formats (Max: 8MB)</p>
+              <p className="text-[10px] text-[#78716C] mt-0.5">PNG, JPG, WEBP formats (Max: 10MB)</p>
             </div>
           </div>
 
@@ -469,11 +512,7 @@ export const UserProfilePage: React.FC = () => {
                 key={idx}
                 src={url}
                 alt={`Avatar ${idx}`}
-                onClick={() => {
-                  setCustomAvatarUrl(url);
-                  setIsAvatarModalOpen(false);
-                  antMessage.success('Profil surati tanlandi!');
-                }}
+                onClick={() => handleSaveAvatar(url)}
                 className="w-16 h-16 rounded-2xl object-cover border-2 border-[#E7E5E4] hover:border-[#3F6B4F] cursor-pointer hover:scale-105 transition-all"
               />
             ))}
@@ -489,8 +528,18 @@ export const UserProfilePage: React.FC = () => {
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="primary" size="sm" onClick={() => setIsAvatarModalOpen(false)}>
-              Tayyor
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                if (customAvatarUrl.trim()) {
+                  handleSaveAvatar(customAvatarUrl.trim());
+                } else {
+                  setIsAvatarModalOpen(false);
+                }
+              }}
+            >
+              Saqlash
             </Button>
           </div>
         </div>

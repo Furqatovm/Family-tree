@@ -85,9 +85,17 @@ export const Navbar: React.FC = () => {
               <div className="h-4 w-px bg-[#E7E5E4] mx-1" />
               <div className="flex items-center gap-2 pl-1">
                 <Link to="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                  <div className="w-8 h-8 rounded-full bg-[#3F6B4F]/10 border border-[#3F6B4F]/30 flex items-center justify-center text-[#3F6B4F] font-semibold text-xs shadow-sm">
-                    {user.first_name[0]}{user.last_name[0]}
-                  </div>
+                  {user.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt={user.first_name}
+                      className="w-8 h-8 rounded-full object-cover border border-[#3F6B4F]/30 shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-[#3F6B4F]/10 border border-[#3F6B4F]/30 flex items-center justify-center text-[#3F6B4F] font-semibold text-xs shadow-sm">
+                      {user.first_name[0]}{user.last_name[0]}
+                    </div>
+                  )}
                   <span className="text-sm font-medium text-[#1C1917]">
                     {user.first_name}
                   </span>
@@ -124,9 +132,17 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center gap-2 lg:hidden">
           {user && (
             <Link to="/profile" className="flex items-center gap-2 mr-1">
-              <div className="w-8 h-8 rounded-full bg-[#3F6B4F]/10 border border-[#3F6B4F]/30 flex items-center justify-center text-[#3F6B4F] font-semibold text-xs shadow-sm">
-                {user.first_name[0]}{user.last_name[0]}
-              </div>
+              {user.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt={user.first_name}
+                  className="w-8 h-8 rounded-full object-cover border border-[#3F6B4F]/30 shadow-sm"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-[#3F6B4F]/10 border border-[#3F6B4F]/30 flex items-center justify-center text-[#3F6B4F] font-semibold text-xs shadow-sm">
+                  {user.first_name[0]}{user.last_name[0]}
+                </div>
+              )}
             </Link>
           )}
           <button

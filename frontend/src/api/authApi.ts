@@ -43,7 +43,7 @@ export const authApi = {
     const res = await api.get('/auth/me');
     return res.data;
   },
-  updateProfile: async (payload: { first_name?: string; last_name?: string; email?: string }): Promise<User> => {
+  updateProfile: async (payload: { first_name?: string; last_name?: string; email?: string; avatar_url?: string }): Promise<User> => {
     const res = await api.put('/auth/me', payload);
     return res.data;
   },

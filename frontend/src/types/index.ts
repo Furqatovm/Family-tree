@@ -3,6 +3,7 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  avatar_url?: string;
   is_admin?: boolean;
   plan_tier?: 'free' | 'basic' | 'pro';
   created_at?: string;

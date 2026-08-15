@@ -60,6 +60,14 @@ def create_app(config_class=Config):
         except Exception:
             pass
 
+        try:
+            from sqlalchemy import text
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN avatar_url TEXT"))
+                conn.commit()
+        except Exception:
+            pass
+
         # Auto-seed default Super Admin and Demo User with Family Tree
         from app.seeder import seed_demo_data_if_missing
         seed_demo_data_if_missing()

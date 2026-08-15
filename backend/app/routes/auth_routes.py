@@ -116,7 +116,8 @@ def update_me():
             current_user_id,
             first_name=data.get('first_name'),
             last_name=data.get('last_name'),
-            email=data.get('email')
+            email=data.get('email'),
+            avatar_url=data.get('avatar_url')
         )
         return jsonify(updated_dict), 200
     except ValueError as err:
