@@ -209,27 +209,27 @@ export const LandingPage: React.FC = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: false, amount: 0.2 }}
             transition={{ duration: 0.6 }}
-            className="relative rounded-3xl bg-white border border-[#E7E5E4] shadow-floating p-4 sm:p-10 max-w-4xl mx-auto min-h-[440px] flex items-center justify-center overflow-hidden"
+            className="relative rounded-3xl bg-white border border-[#E7E5E4] shadow-floating p-4 sm:p-8 max-w-6xl mx-auto min-h-[580px] flex items-center justify-center overflow-hidden"
           >
             {/* Background subtle grid */}
             <div className="absolute inset-0 bg-[radial-gradient(#E7E5E4_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" />
 
-            <div className="relative w-full max-w-[800px] h-[380px]">
+            <div className="relative w-full max-w-[1000px] h-[500px]">
               {/* SVG Curved Bezier Wood Branches with viewBox scaling */}
-              <svg viewBox="0 0 800 400" className="absolute inset-0 w-full h-full overflow-visible pointer-events-none z-10">
+              <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full overflow-visible pointer-events-none z-10">
                 <defs>
                   <linearGradient id="landingBranchGradient" x1="0%" y1="100%" x2="0%" y2="0%">
                     <stop offset="0%" stopColor="#4A2E1B" />
-                    <stop offset="60%" stopColor="#6B4226" />
+                    <stop offset="50%" stopColor="#6B4226" />
                     <stop offset="100%" stopColor="#3F6B4F" />
                   </linearGradient>
                 </defs>
 
-                {/* Trunk Pillar at Base */}
+                {/* Main Root Trunk */}
                 <motion.path
-                  d="M 400 360 Q 395 330, 400 300"
+                  d="M 500 460 Q 500 410, 500 370"
                   stroke="url(#landingBranchGradient)"
-                  strokeWidth={14}
+                  strokeWidth={16}
                   strokeLinecap="round"
                   fill="none"
                   initial={{ pathLength: 0, opacity: 0 }}
@@ -238,9 +238,22 @@ export const LandingPage: React.FC = () => {
                   transition={{ duration: 0.6 }}
                 />
 
-                {/* Branch 1 to Left Gen 2 (Robert Sterling) */}
+                {/* Main Branch 1: Left (to Robert & Catherine) */}
                 <motion.path
-                  d="M 400 300 C 320 270, 260 240, 240 210"
+                  d="M 500 370 C 400 350, 300 310, 220 270"
+                  stroke="url(#landingBranchGradient)"
+                  strokeWidth={11}
+                  strokeLinecap="round"
+                  fill="none"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                />
+
+                {/* Main Branch 2: Center (to Victoria) */}
+                <motion.path
+                  d="M 500 370 C 500 330, 500 295, 500 255"
                   stroke="url(#landingBranchGradient)"
                   strokeWidth={10}
                   strokeLinecap="round"
@@ -248,180 +261,536 @@ export const LandingPage: React.FC = () => {
                   initial={{ pathLength: 0, opacity: 0 }}
                   whileInView={{ pathLength: 1, opacity: 1 }}
                   viewport={{ once: false }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
+                  transition={{ duration: 0.7, delay: 0.4 }}
                 />
 
-                {/* Branch 2 to Right Gen 2 (Julian Sterling) */}
+                {/* Main Branch 3: Right (to Julian & Elena) */}
                 <motion.path
-                  d="M 400 300 C 480 270, 540 240, 560 210"
+                  d="M 500 370 C 600 350, 700 310, 780 270"
                   stroke="url(#landingBranchGradient)"
-                  strokeWidth={10}
+                  strokeWidth={11}
                   strokeLinecap="round"
                   fill="none"
                   initial={{ pathLength: 0, opacity: 0 }}
                   whileInView={{ pathLength: 1, opacity: 1 }}
                   viewport={{ once: false }}
-                  transition={{ duration: 0.8, delay: 0.5 }}
+                  transition={{ duration: 0.8, delay: 0.35 }}
                 />
 
-                {/* Sub-branch to Gen 3 (Eleanor Sterling) */}
+                {/* LEFT Sub-branches (Gen 3 Children) */}
                 <motion.path
-                  d="M 240 210 C 200 170, 160 130, 150 90"
+                  d="M 220 270 C 170 200, 130 140, 100 85"
                   stroke="url(#landingBranchGradient)"
-                  strokeWidth={7}
+                  strokeWidth={6}
                   strokeLinecap="round"
                   fill="none"
                   initial={{ pathLength: 0, opacity: 0 }}
                   whileInView={{ pathLength: 1, opacity: 1 }}
                   viewport={{ once: false }}
-                  transition={{ duration: 0.8, delay: 0.9 }}
+                  transition={{ duration: 0.7, delay: 0.8 }}
                 />
-
-                {/* Sub-branch to Gen 3 (Lucas Sterling) */}
                 <motion.path
-                  d="M 240 210 C 280 170, 320 130, 330 90"
+                  d="M 220 270 C 220 190, 220 130, 220 70"
                   stroke="url(#landingBranchGradient)"
-                  strokeWidth={7}
+                  strokeWidth={6}
                   strokeLinecap="round"
                   fill="none"
                   initial={{ pathLength: 0, opacity: 0 }}
                   whileInView={{ pathLength: 1, opacity: 1 }}
                   viewport={{ once: false }}
-                  transition={{ duration: 0.8, delay: 1.0 }}
+                  transition={{ duration: 0.7, delay: 0.9 }}
+                />
+                <motion.path
+                  d="M 220 270 C 260 200, 300 140, 330 85"
+                  stroke="url(#landingBranchGradient)"
+                  strokeWidth={6}
+                  strokeLinecap="round"
+                  fill="none"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 0.7, delay: 1.0 }}
+                />
+
+                {/* CENTER Sub-branches (Gen 3 Children) */}
+                <motion.path
+                  d="M 500 255 C 480 185, 455 130, 440 70"
+                  stroke="url(#landingBranchGradient)"
+                  strokeWidth={6}
+                  strokeLinecap="round"
+                  fill="none"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 0.7, delay: 0.85 }}
+                />
+                <motion.path
+                  d="M 500 255 C 520 185, 545 130, 560 70"
+                  stroke="url(#landingBranchGradient)"
+                  strokeWidth={6}
+                  strokeLinecap="round"
+                  fill="none"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 0.7, delay: 0.95 }}
+                />
+
+                {/* RIGHT Sub-branches (Gen 3 Children) */}
+                <motion.path
+                  d="M 780 270 C 740 200, 700 140, 670 85"
+                  stroke="url(#landingBranchGradient)"
+                  strokeWidth={6}
+                  strokeLinecap="round"
+                  fill="none"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 0.7, delay: 0.8 }}
+                />
+                <motion.path
+                  d="M 780 270 C 780 190, 780 130, 780 70"
+                  stroke="url(#landingBranchGradient)"
+                  strokeWidth={6}
+                  strokeLinecap="round"
+                  fill="none"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 0.7, delay: 0.9 }}
+                />
+                <motion.path
+                  d="M 780 270 C 830 200, 870 140, 900 85"
+                  stroke="url(#landingBranchGradient)"
+                  strokeWidth={6}
+                  strokeLinecap="round"
+                  fill="none"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 0.7, delay: 1.0 }}
                 />
               </svg>
 
-              {/* HTML Animated Person Nodes positioned by percentage */}
-              {/* ROOT PERSON (Arthur Sterling) */}
+              {/* ========================================================= */}
+              {/* GEN 1: ROOT PATRIARCH & MATRIARCH (Arthur & Margaret)     */}
+              {/* ========================================================= */}
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: false }}
                 transition={{ duration: 0.5, delay: 0.1, type: 'spring' }}
-                style={{ left: '50%', top: '90%' }}
+                style={{ left: '44%', top: '85%' }}
                 className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
               >
-                <div className="w-14 sm:w-16 h-14 sm:h-16 rounded-full p-1 bg-gradient-to-br from-[#A67C52] via-[#5C3D2E] to-[#3F6B4F] shadow-lg group-hover:scale-110 transition-transform relative">
+                <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-full p-1 bg-gradient-to-br from-[#A67C52] via-[#5C3D2E] to-[#3F6B4F] shadow-lg group-hover:scale-110 transition-transform relative">
                   <img
-                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80"
+                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80"
                     alt="Arthur Sterling"
                     className="w-full h-full rounded-full object-cover border border-amber-200"
                   />
-                  <span className="absolute -bottom-1 -right-1 bg-[#A67C52] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                  <span className="absolute -bottom-1 -right-1 bg-[#A67C52] text-white text-[7px] font-bold px-1.5 py-0.5 rounded-full shadow">
                     🌳 ROOT
                   </span>
                 </div>
-                <span className="mt-1 bg-[#1C1917] text-white px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-serif font-bold shadow">
+                <span className="mt-1 bg-[#1C1917] text-white px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-serif font-bold shadow whitespace-nowrap">
                   Arthur Sterling
                 </span>
+                <span className="text-[8px] text-[#78716C] font-mono">1938–2018</span>
               </motion.div>
 
-              {/* GEN 2 LEFT (Robert Sterling) */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 0.15, type: 'spring' }}
+                style={{ left: '56%', top: '85%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-full p-1 bg-gradient-to-br from-rose-400 via-amber-400 to-[#3F6B4F] shadow-lg group-hover:scale-110 transition-transform relative">
+                  <img
+                    src="https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?auto=format&fit=crop&w=300&q=80"
+                    alt="Margaret Vance"
+                    className="w-full h-full rounded-full object-cover border border-rose-200"
+                  />
+                  <span className="absolute -bottom-1 -right-1 bg-rose-600 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                    💍 SPOUSE
+                  </span>
+                </div>
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-serif font-bold shadow whitespace-nowrap">
+                  Margaret Vance
+                </span>
+                <span className="text-[8px] text-[#78716C] font-mono">1942–Pres</span>
+              </motion.div>
+
+              {/* ========================================================= */}
+              {/* GEN 2: CHILDREN & SPOUSES (Robert, Victoria, Julian)       */}
+              {/* ========================================================= */}
+              {/* Gen 2 Left: Robert Sterling */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 0.5, type: 'spring' }}
+                style={{ left: '19%', top: '54%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
+                </div>
+                <motion.div
+                  whileHover={{ rotate: [-4, 4, -4, 0] }}
+                  className="w-11 sm:w-12 h-11 sm:h-12 rounded-full p-0.5 bg-gradient-to-br from-rose-500 to-amber-500 shadow-md group-hover:scale-110 transition-transform relative"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80"
+                    alt="Robert Sterling"
+                    className="w-full h-full rounded-full object-cover border border-white"
+                  />
+                </motion.div>
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-serif font-bold shadow whitespace-nowrap">
+                  Robert Sterling
+                </span>
+                <span className="text-[7px] text-[#78716C]">1968</span>
+              </motion.div>
+
+              {/* Gen 2 Left Spouse: Catherine Chen */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 0.55, type: 'spring' }}
+                style={{ left: '26%', top: '54%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🌸</span>
+                </div>
+                <motion.div
+                  whileHover={{ rotate: [-4, 4, -4, 0] }}
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-pink-400 to-rose-500 shadow-md group-hover:scale-110 transition-transform relative"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80"
+                    alt="Catherine Chen"
+                    className="w-full h-full rounded-full object-cover border border-white"
+                  />
+                </motion.div>
+                <span className="mt-1 bg-rose-50 text-rose-800 border border-rose-200 px-1.5 py-0.5 rounded-full text-[8px] font-serif font-semibold shadow whitespace-nowrap">
+                  Catherine Chen
+                </span>
+                <span className="text-[7px] text-[#78716C]">1971</span>
+              </motion.div>
+
+              {/* Gen 2 Center: Victoria Sterling */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 0.6, type: 'spring' }}
+                style={{ left: '50%', top: '51%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
+                </div>
+                <motion.div
+                  whileHover={{ rotate: [-4, 4, -4, 0] }}
+                  className="w-11 sm:w-12 h-11 sm:h-12 rounded-full p-0.5 bg-gradient-to-br from-purple-500 to-indigo-500 shadow-md group-hover:scale-110 transition-transform relative"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80"
+                    alt="Victoria Sterling"
+                    className="w-full h-full rounded-full object-cover border border-white"
+                  />
+                </motion.div>
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-serif font-bold shadow whitespace-nowrap">
+                  Victoria Sterling
+                </span>
+                <span className="text-[7px] text-[#78716C]">1974</span>
+              </motion.div>
+
+              {/* Gen 2 Right: Julian Sterling */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 0.65, type: 'spring' }}
+                style={{ left: '74%', top: '54%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
+                </div>
+                <motion.div
+                  whileHover={{ rotate: [-4, 4, -4, 0] }}
+                  className="w-11 sm:w-12 h-11 sm:h-12 rounded-full p-0.5 bg-gradient-to-br from-amber-400 to-emerald-500 shadow-md group-hover:scale-110 transition-transform relative"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80"
+                    alt="Julian Sterling"
+                    className="w-full h-full rounded-full object-cover border border-white"
+                  />
+                </motion.div>
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-serif font-bold shadow whitespace-nowrap">
+                  Julian Sterling
+                </span>
+                <span className="text-[7px] text-[#78716C]">1978</span>
+              </motion.div>
+
+              {/* Gen 2 Right Spouse: Elena Rostova */}
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: false }}
                 transition={{ duration: 0.5, delay: 0.7, type: 'spring' }}
-                style={{ left: '30%', top: '52.5%' }}
+                style={{ left: '82%', top: '54%' }}
                 className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
               >
-                <div className="w-0.5 h-4 bg-[#5C3D2E] relative">
-                  <span className="absolute -top-1.5 -right-2 text-[10px]">🍃</span>
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🌸</span>
                 </div>
                 <motion.div
                   whileHover={{ rotate: [-4, 4, -4, 0] }}
-                  className="w-12 sm:w-14 h-12 sm:h-14 rounded-full p-1 bg-gradient-to-br from-rose-500 to-amber-500 shadow-md group-hover:scale-110 transition-transform relative"
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-emerald-400 to-teal-600 shadow-md group-hover:scale-110 transition-transform relative"
                 >
                   <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
-                    alt="Robert Sterling"
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
+                    alt="Elena Rostova"
                     className="w-full h-full rounded-full object-cover border border-white"
                   />
                 </motion.div>
-                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-serif font-bold shadow">
-                  Robert Sterling
+                <span className="mt-1 bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 py-0.5 rounded-full text-[8px] font-serif font-semibold shadow whitespace-nowrap">
+                  Elena Rostova
                 </span>
+                <span className="text-[7px] text-[#78716C]">1980</span>
               </motion.div>
 
-              {/* GEN 2 RIGHT (Julian Sterling) */}
+              {/* ========================================================= */}
+              {/* GEN 3: GRANDCHILDREN LEAF NODES (8 Children Across Canopy) */}
+              {/* ========================================================= */}
+              {/* Left Branch: Eleanor Sterling */}
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: false }}
-                transition={{ duration: 0.5, delay: 0.8, type: 'spring' }}
-                style={{ left: '70%', top: '52.5%' }}
+                transition={{ duration: 0.5, delay: 1.0, type: 'spring' }}
+                style={{ left: '10%', top: '17%' }}
                 className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
               >
-                <div className="w-0.5 h-4 bg-[#5C3D2E] relative">
-                  <span className="absolute -top-1.5 -right-2 text-[10px]">🍃</span>
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
                 </div>
                 <motion.div
-                  whileHover={{ rotate: [-4, 4, -4, 0] }}
-                  className="w-12 sm:w-14 h-12 sm:h-14 rounded-full p-1 bg-gradient-to-br from-amber-400 to-emerald-500 shadow-md group-hover:scale-110 transition-transform relative"
+                  whileHover={{ scale: 1.2, rotate: [-5, 5, 0] }}
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-rose-400 to-amber-400 shadow-md relative"
                 >
                   <img
-                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80"
-                    alt="Julian Sterling"
+                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80"
+                    alt="Eleanor Sterling"
                     className="w-full h-full rounded-full object-cover border border-white"
                   />
                 </motion.div>
-                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-serif font-bold shadow">
-                  Julian Sterling
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] font-serif font-bold shadow whitespace-nowrap">
+                  Eleanor Sterling
                 </span>
+                <span className="text-[7px] text-[#78716C]">1995</span>
               </motion.div>
 
-              {/* GEN 3 LEFT (Eleanor Sterling) */}
+              {/* Left Branch: Lucas Sterling */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 1.05, type: 'spring' }}
+                style={{ left: '22%', top: '14%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
+                </div>
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: [-5, 5, 0] }}
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-emerald-400 to-teal-500 shadow-md relative"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&q=80"
+                    alt="Lucas Sterling"
+                    className="w-full h-full rounded-full object-cover border border-white"
+                  />
+                </motion.div>
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] font-serif font-bold shadow whitespace-nowrap">
+                  Lucas Sterling
+                </span>
+                <span className="text-[7px] text-[#78716C]">1998</span>
+              </motion.div>
+
+              {/* Left Branch: Oliver Sterling */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 1.1, type: 'spring' }}
+                style={{ left: '33%', top: '17%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
+                </div>
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: [-5, 5, 0] }}
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-cyan-400 to-blue-500 shadow-md relative"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=300&q=80"
+                    alt="Oliver Sterling"
+                    className="w-full h-full rounded-full object-cover border border-white"
+                  />
+                </motion.div>
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] font-serif font-bold shadow whitespace-nowrap">
+                  Oliver Sterling
+                </span>
+                <span className="text-[7px] text-[#78716C]">2003</span>
+              </motion.div>
+
+              {/* Center Branch: Grace Miller */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 1.15, type: 'spring' }}
+                style={{ left: '44%', top: '14%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
+                </div>
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: [-5, 5, 0] }}
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-amber-400 to-orange-500 shadow-md relative"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80"
+                    alt="Grace Miller"
+                    className="w-full h-full rounded-full object-cover border border-white"
+                  />
+                </motion.div>
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] font-serif font-bold shadow whitespace-nowrap">
+                  Grace Miller
+                </span>
+                <span className="text-[7px] text-[#78716C]">2004</span>
+              </motion.div>
+
+              {/* Center Branch: Henry Miller */}
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: false }}
                 transition={{ duration: 0.5, delay: 1.2, type: 'spring' }}
-                style={{ left: '18.75%', top: '22.5%' }}
+                style={{ left: '56%', top: '14%' }}
                 className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
               >
-                <div className="w-0.5 h-4 bg-[#5C3D2E] relative">
-                  <span className="absolute -top-1.5 -right-2 text-[10px]">🍃</span>
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
                 </div>
                 <motion.div
-                  whileHover={{ rotate: [-4, 4, -4, 0] }}
-                  className="w-10 sm:w-12 h-10 sm:h-12 rounded-full p-1 bg-gradient-to-br from-rose-500 to-amber-500 shadow-md group-hover:scale-110 transition-transform relative"
+                  whileHover={{ scale: 1.2, rotate: [-5, 5, 0] }}
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-indigo-400 to-purple-500 shadow-md relative"
                 >
                   <img
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80"
-                    alt="Eleanor Sterling"
+                    src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80"
+                    alt="Henry Miller"
                     className="w-full h-full rounded-full object-cover border border-white"
                   />
                 </motion.div>
-                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-serif font-bold shadow">
-                  Eleanor Sterling
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] font-serif font-bold shadow whitespace-nowrap">
+                  Henry Miller
                 </span>
+                <span className="text-[7px] text-[#78716C]">2008</span>
               </motion.div>
 
-              {/* GEN 3 RIGHT (Lucas Sterling) */}
+              {/* Right Branch: Sophia Sterling */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 1.25, type: 'spring' }}
+                style={{ left: '67%', top: '17%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
+                </div>
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: [-5, 5, 0] }}
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-rose-400 to-pink-500 shadow-md relative"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80"
+                    alt="Sophia Sterling"
+                    className="w-full h-full rounded-full object-cover border border-white"
+                  />
+                </motion.div>
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] font-serif font-bold shadow whitespace-nowrap">
+                  Sophia Sterling
+                </span>
+                <span className="text-[7px] text-[#78716C]">2005</span>
+              </motion.div>
+
+              {/* Right Branch: Liam Sterling */}
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: false }}
                 transition={{ duration: 0.5, delay: 1.3, type: 'spring' }}
-                style={{ left: '41.25%', top: '22.5%' }}
+                style={{ left: '78%', top: '14%' }}
                 className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
               >
-                <div className="w-0.5 h-4 bg-[#5C3D2E] relative">
-                  <span className="absolute -top-1.5 -right-2 text-[10px]">🍃</span>
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
                 </div>
                 <motion.div
-                  whileHover={{ rotate: [-4, 4, -4, 0] }}
-                  className="w-10 sm:w-12 h-10 sm:h-12 rounded-full p-1 bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md group-hover:scale-110 transition-transform relative"
+                  whileHover={{ scale: 1.2, rotate: [-5, 5, 0] }}
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-emerald-400 to-green-600 shadow-md relative"
                 >
                   <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"
-                    alt="Lucas Sterling"
+                    src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80"
+                    alt="Liam Sterling"
                     className="w-full h-full rounded-full object-cover border border-white"
                   />
                 </motion.div>
-                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-serif font-bold shadow">
-                  Lucas Sterling
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] font-serif font-bold shadow whitespace-nowrap">
+                  Liam Sterling
                 </span>
+                <span className="text-[7px] text-[#78716C]">2009</span>
+              </motion.div>
+
+              {/* Right Branch: Maya Sterling */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 0.5, delay: 1.35, type: 'spring' }}
+                style={{ left: '90%', top: '17%' }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center group cursor-pointer"
+              >
+                <div className="w-0.5 h-3 bg-[#5C3D2E] relative">
+                  <span className="absolute -top-1.5 -right-2 text-[9px]">🍃</span>
+                </div>
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: [-5, 5, 0] }}
+                  className="w-10 sm:w-11 h-10 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-violet-400 to-fuchsia-500 shadow-md relative"
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80"
+                    alt="Maya Sterling"
+                    className="w-full h-full rounded-full object-cover border border-white"
+                  />
+                </motion.div>
+                <span className="mt-1 bg-white text-[#1C1917] border border-[#E7E5E4] px-1.5 py-0.5 rounded-full text-[8px] font-serif font-bold shadow whitespace-nowrap">
+                  Maya Sterling
+                </span>
+                <span className="text-[7px] text-[#78716C]">2013</span>
               </motion.div>
             </div>
           </motion.div>
