@@ -1,17 +1,36 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GitFork, Heart, Sparkles, ArrowRight, ShieldCheck, Users, Search, Compass, MapPin, Play, RefreshCw, Plus, Minus, HelpCircle, Check, Crown } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
+import { authApi } from '../api/authApi';
 import { SEO } from '../components/common/SEO';
 
 export const LandingPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
   const [demoGrowthKey, setDemoGrowthKey] = React.useState<number>(0);
   const [openFaqIndex, setOpenFaqIndex] = React.useState<number | null>(0);
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
 
   const isProActive = user?.is_admin || user?.plan_tier === 'pro';
+
+  const handleExploreDemo = async () => {
+    setIsDemoLoading(true);
+    try {
+      const res = await authApi.login({
+        email: 'demo@example.com',
+        password: 'password123',
+      });
+      login(res.access_token, res.user);
+      navigate('/dashboard');
+    } catch {
+      navigate('/login');
+    } finally {
+      setIsDemoLoading(false);
+    }
+  };
 
   const toggleFaq = (idx: number) => {
     setOpenFaqIndex(openFaqIndex === idx ? null : idx);
@@ -67,11 +86,14 @@ export const LandingPage: React.FC = () => {
                   Build Your Tree Free
                 </Button>
               </Link>
-              <Link to="/login">
-                <Button size="lg" variant="outline">
-                  Explore Demo Account
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                variant="outline"
+                isLoading={isDemoLoading}
+                onClick={handleExploreDemo}
+              >
+                Explore Demo Account
+              </Button>
             </motion.div>
           </div>
 

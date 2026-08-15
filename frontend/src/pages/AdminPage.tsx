@@ -3,14 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield, Users, GitFork, MapPin, Trash2, CheckCircle, ShieldAlert, Sparkles, RefreshCw, Layers, ExternalLink } from 'lucide-react';
-import { Table, Tag, Popconfirm, message as antMessage, Tabs } from 'antd';
+import { Table, Tag, message as antMessage, Tabs } from 'antd';
 import { adminApi, AdminUser, AdminFamily } from '../api/adminApi';
+import { familyApi } from '../api/familyApi';
 import { Button } from '../components/ui/Button';
+import { DeleteConfirmModal } from '../components/people/DeleteConfirmModal';
 
 export const AdminPage: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('users');
+  const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
+  const [deletingFamily, setDeletingFamily] = useState<AdminFamily | null>(null);
 
   // Fetch admin stats
   const { data: stats, isLoading: isLoadingStats } = useQuery({
@@ -49,10 +53,26 @@ export const AdminPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       queryClient.invalidateQueries({ queryKey: ['admin-families'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      setDeletingUser(null);
       antMessage.success(data.message);
     },
     onError: (err: any) => {
       antMessage.error(err.response?.data?.error || 'Xatolik yuz berdi');
+    },
+  });
+
+  // Delete Family Mutation (Admin)
+  const deleteFamilyMutation = useMutation({
+    mutationFn: (familyId: number) => familyApi.deleteFamily(familyId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-families'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      setDeletingFamily(null);
+      antMessage.success("Shajara muvaffaqiyatli o'chirildi");
+    },
+    onError: (err: any) => {
+      antMessage.error(err.response?.data?.error || 'Shajarani o\'chirishda xatolik yuz berdi');
     },
   });
 
@@ -111,18 +131,15 @@ export const AdminPage: React.FC = () => {
             {record.is_admin ? 'Userga O\'tkazish' : 'Admin Qilish'}
           </Button>
 
-          <Popconfirm
+          <Button
+            variant="ghost"
+            size="sm"
             title="Foydalanuvchini o'chirish"
-            description="Ushbu foydalanuvchi va uning barcha shajaralari o'chiriladi. Rozimisiz?"
-            onConfirm={() => deleteUserMutation.mutate(record.id)}
-            okText="Ha, o'chirish"
-            cancelText="Yo'q"
-            okButtonProps={{ danger: true }}
+            onClick={() => setDeletingUser(record)}
+            className="text-rose-600 hover:bg-rose-50 p-1.5"
           >
-            <Button variant="ghost" size="sm" className="text-rose-600 hover:bg-rose-50 p-1.5">
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </Popconfirm>
+            <Trash2 className="w-4 h-4" />
+          </Button>
         </div>
       ),
     },
@@ -162,10 +179,10 @@ export const AdminPage: React.FC = () => {
       render: (dateStr: string) => (dateStr ? new Date(dateStr).toLocaleDateString() : '-'),
     },
     {
-      title: 'Ko\'rish',
-      key: 'view',
+      title: 'Amallar',
+      key: 'actions',
       render: (record: AdminFamily) => (
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Link to={`/families/${record.id}/tree`}>
             <Button variant="outline" size="sm" className="text-xs py-1" leftIcon={<GitFork className="w-3 h-3 rotate-180" />}>
               Tree
@@ -176,6 +193,15 @@ export const AdminPage: React.FC = () => {
               Map
             </Button>
           </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Shajarani o'chirish"
+            onClick={() => setDeletingFamily(record)}
+            className="text-rose-600 hover:bg-rose-50 p-1.5"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
         </div>
       ),
     },
@@ -322,6 +348,34 @@ export const AdminPage: React.FC = () => {
           ]}
         />
       </motion.div>
+
+      {/* Delete User Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deletingUser)}
+        onClose={() => setDeletingUser(null)}
+        onConfirm={async () => {
+          if (deletingUser) {
+            await deleteUserMutation.mutateAsync(deletingUser.id);
+          }
+        }}
+        title="Foydalanuvchini O'chirish"
+        message={`"${deletingUser?.first_name} ${deletingUser?.last_name}" (${deletingUser?.email}) foydalanuvchisini va unga tegishli barcha oila shajaralarini butunlay o'chirmoqchimisiz?`}
+        isLoading={deleteUserMutation.isPending}
+      />
+
+      {/* Delete Family Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deletingFamily)}
+        onClose={() => setDeletingFamily(null)}
+        onConfirm={async () => {
+          if (deletingFamily) {
+            await deleteFamilyMutation.mutateAsync(deletingFamily.id);
+          }
+        }}
+        title="Shajarani O'chirish"
+        message={`"${deletingFamily?.name}" oila shajarasi va unga tegishli barcha a'zolarni butunlay o'chirmoqchimisiz?`}
+        isLoading={deleteFamilyMutation.isPending}
+      />
     </div>
   );
 };

@@ -63,4 +63,8 @@ export const authApi = {
     const res = await api.post('/auth/reset-password', payload);
     return res.data;
   },
+  deleteAccount: async (): Promise<{ message: string }> => {
+    const res = await api.delete('/auth/me');
+    return res.data;
+  },
 };

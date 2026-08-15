@@ -82,10 +82,25 @@ def delete_user(user_id):
     if not user:
         return jsonify({'error': 'Foydalanuvchi topilmadi'}), 404
 
+    from app.models.family import Family
+    from app.models.person import Person
+    from app.models.relationship import Relationship
+    from app.models.location_history import LocationHistory
+
+    families = Family.query.filter_by(owner_id=user.id).all()
+    for fam in families:
+        people = Person.query.filter_by(family_id=fam.id).all()
+        for p in people:
+            LocationHistory.query.filter_by(person_id=p.id).delete()
+            Relationship.query.filter((Relationship.person_1_id == p.id) | (Relationship.person_2_id == p.id)).delete()
+            db.session.delete(p)
+        Relationship.query.filter_by(family_id=fam.id).delete()
+        db.session.delete(fam)
+
     db.session.delete(user)
     db.session.commit()
 
-    return jsonify({'message': 'Foydalanuvchi va unga tegishli barcha shajaralar o\'chirildi'}), 200
+    return jsonify({'message': 'Foydalanuvchi va unga tegishli barcha shajaralar muvaffaqiyatli o\'chirildi'}), 200
 
 @admin_bp.route('/families', methods=['GET'])
 @jwt_required()

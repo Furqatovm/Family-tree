@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Mail, Shield, GitFork, MapPin, Edit3, Key, Camera, Check, Calendar, Sparkles, Lock, ArrowRight, RefreshCw, X } from 'lucide-react';
+import { User, Mail, Shield, GitFork, MapPin, Edit3, Key, Camera, Check, Calendar, Sparkles, Lock, ArrowRight, RefreshCw, X, Trash2, AlertTriangle } from 'lucide-react';
 import { Input as AntInput, Modal as AntModal, message as antMessage } from 'antd';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../api/authApi';
 import { familyApi } from '../api/familyApi';
 import { Button } from '../components/ui/Button';
+import { DeleteConfirmModal } from '../components/people/DeleteConfirmModal';
 
 export const UserProfilePage: React.FC = () => {
   const { user, logout, refetchUser } = useAuth();
@@ -18,6 +19,8 @@ export const UserProfilePage: React.FC = () => {
   const [lastName, setLastName] = useState(user?.last_name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   // Change password modal state
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -94,6 +97,22 @@ export const UserProfilePage: React.FC = () => {
       antMessage.error(errMsg);
     } finally {
       setIsChangingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      await authApi.deleteAccount();
+      antMessage.success("Hisobingiz muvaffaqiyatli o'chirildi");
+      logout();
+      navigate('/');
+    } catch (err: any) {
+      const errMsg = err?.response?.data?.error || "Hisobni o'chirishda xatolik yuz berdi";
+      antMessage.error(errMsg);
+    } finally {
+      setIsDeletingAccount(false);
+      setIsDeleteAccountModalOpen(false);
     }
   };
 
@@ -253,8 +272,29 @@ export const UserProfilePage: React.FC = () => {
               <span className="text-xs text-emerald-700 font-medium flex items-center gap-1.5">
                 <Shield className="w-4 h-4" /> JWT Seans Faol
               </span>
-              <Button variant="danger" size="sm" onClick={logout}>
+              <Button variant="outline" size="sm" onClick={logout}>
                 Hisobdan Chiqish (Log Out)
+              </Button>
+            </div>
+
+            {/* Danger Zone: Delete Account */}
+            <div className="mt-4 p-4 rounded-2xl bg-rose-50/70 border border-rose-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="space-y-0.5 text-center sm:text-left">
+                <p className="text-xs font-bold text-rose-900 flex items-center gap-1.5 justify-center sm:justify-start">
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                  Xavfli Hudud: Hisobni O'chirish
+                </p>
+                <p className="text-[11px] text-rose-700">
+                  Hisobingiz va unga tegishli barcha oila shajaralari butunlay o'chiriladi
+                </p>
+              </div>
+              <Button
+                variant="danger"
+                size="sm"
+                leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                onClick={() => setIsDeleteAccountModalOpen(true)}
+              >
+                Hisobni O'chirish
               </Button>
             </div>
           </div>
@@ -455,6 +495,16 @@ export const UserProfilePage: React.FC = () => {
           </div>
         </div>
       </AntModal>
+
+      {/* Delete Account Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteAccountModalOpen}
+        onClose={() => setIsDeleteAccountModalOpen(false)}
+        onConfirm={handleDeleteAccount}
+        title="Hisobni Butunlay O'chirish"
+        message="Haqiqatan ham hisobingizni o'chirmoqchimisiz? Ushbu amal hisobingiz va unga tegishli barcha oila shajaralarini butunlay o'chirib tashlaydi va bu amalni ortga qaytarib bo'lmaydi."
+        isLoading={isDeletingAccount}
+      />
     </div>
   );
 };

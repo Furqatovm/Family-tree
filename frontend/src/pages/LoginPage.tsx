@@ -50,9 +50,23 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const fillDemoAccount = () => {
+  const handleInstantDemoLogin = async () => {
     setValue('email', 'demo@example.com');
     setValue('password', 'password123');
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const res = await authApi.login({
+        email: 'demo@example.com',
+        password: 'password123',
+      });
+      login(res.access_token, res.user);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setErrorMessage(err.response?.data?.error || 'Demo akkauntga kirishda xatolik yuz berdi.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -75,8 +89,8 @@ export const LoginPage: React.FC = () => {
             <Sparkles className="w-4 h-4 flex-shrink-0" />
             <span>Try the Demo Family Tree</span>
           </div>
-          <Button type="button" size="sm" variant="primary" onClick={fillDemoAccount}>
-            Fill Demo
+          <Button type="button" size="sm" variant="primary" isLoading={isLoading} onClick={handleInstantDemoLogin}>
+            Instant Demo
           </Button>
         </div>
 

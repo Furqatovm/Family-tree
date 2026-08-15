@@ -86,5 +86,9 @@ class PersonRepository:
 
     @staticmethod
     def delete(person):
+        from app.models.location_history import LocationHistory
+        from app.models.relationship import Relationship
+        LocationHistory.query.filter_by(person_id=person.id).delete()
+        Relationship.query.filter((Relationship.person_1_id == person.id) | (Relationship.person_2_id == person.id)).delete()
         db.session.delete(person)
         db.session.commit()

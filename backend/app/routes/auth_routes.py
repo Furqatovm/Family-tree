@@ -201,3 +201,33 @@ def reset_password():
         return jsonify({'error': str(err)}), 400
     except Exception as err:
         return jsonify({'error': 'Parolni tiklashda xatolik', 'details': str(err)}), 500
+
+@auth_bp.route('/me', methods=['DELETE'])
+@jwt_required()
+def delete_account():
+    """Allow user to delete their account and associated data."""
+    current_user_id = int(get_jwt_identity())
+    from app.models.user import User
+    from app.models.family import Family
+    from app.models.person import Person
+    from app.models.relationship import Relationship
+    from app.models.location_history import LocationHistory
+    from app.extensions import db
+
+    user = User.query.get(current_user_id)
+    if not user:
+        return jsonify({'error': 'Foydalanuvchi topilmadi'}), 404
+
+    families = Family.query.filter_by(owner_id=user.id).all()
+    for fam in families:
+        people = Person.query.filter_by(family_id=fam.id).all()
+        for p in people:
+            LocationHistory.query.filter_by(person_id=p.id).delete()
+            Relationship.query.filter((Relationship.person_1_id == p.id) | (Relationship.person_2_id == p.id)).delete()
+            db.session.delete(p)
+        Relationship.query.filter_by(family_id=fam.id).delete()
+        db.session.delete(fam)
+
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'Hisobingiz va barcha ma\'lumotlaringiz muvaffaqiyatli o\'chirildi'}), 200

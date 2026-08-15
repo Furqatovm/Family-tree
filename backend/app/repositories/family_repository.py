@@ -34,6 +34,15 @@ class FamilyRepository:
 
     @staticmethod
     def delete(family):
+        from app.models.location_history import LocationHistory
+        from app.models.relationship import Relationship
+        from app.models.person import Person
+        people = Person.query.filter_by(family_id=family.id).all()
+        for p in people:
+            LocationHistory.query.filter_by(person_id=p.id).delete()
+            Relationship.query.filter((Relationship.person_1_id == p.id) | (Relationship.person_2_id == p.id)).delete()
+            db.session.delete(p)
+        Relationship.query.filter_by(family_id=family.id).delete()
         db.session.delete(family)
         db.session.commit()
 

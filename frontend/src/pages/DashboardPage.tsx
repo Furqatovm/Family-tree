@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Plus, Users, GitFork, Heart, Layers, ArrowRight, MapPin, Shield, FileText, Crown } from 'lucide-react';
+import { Plus, Users, GitFork, Heart, Layers, ArrowRight, MapPin, Shield, FileText, Crown, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { familyApi, FamilyCreatePayload } from '../api/familyApi';
 import { treeApi } from '../api/treeApi';
@@ -10,6 +10,8 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { ProUpgradeModal } from '../components/ui/ProUpgradeModal';
 import { FamilyPdfReportModal } from '../components/family/FamilyPdfReportModal';
+import { DeleteConfirmModal } from '../components/people/DeleteConfirmModal';
+import { toast } from '../components/ui/CustomToast';
 import { Family, Person, Relationship } from '../types';
 
 export const DashboardPage: React.FC = () => {
@@ -22,6 +24,7 @@ export const DashboardPage: React.FC = () => {
   const [pdfPeople, setPdfPeople] = useState<Person[]>([]);
   const [pdfRels, setPdfRels] = useState<Relationship[]>([]);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [deletingFamily, setDeletingFamily] = useState<Family | null>(null);
   const [newFamilyName, setNewFamilyName] = useState('');
   const [newFamilyDescription, setNewFamilyDescription] = useState('');
 
@@ -51,6 +54,20 @@ export const DashboardPage: React.FC = () => {
         setIsCreateModalOpen(false);
         setIsProModalOpen(true);
       }
+    },
+  });
+
+  const deleteFamilyMutation = useMutation({
+    mutationFn: (familyId: number) => familyApi.deleteFamily(familyId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['families'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      setDeletingFamily(null);
+      toast.success("Oila shajarasi o'chirildi", "Tanlangan shajara muvaffaqiyatli o'chirildi.");
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.error || "Shajarani o'chirishda xatolik yuz berdi";
+      toast.error('Xatolik', msg);
     },
   });
 
@@ -219,7 +236,20 @@ export const DashboardPage: React.FC = () => {
                     <span className="text-xs font-semibold uppercase tracking-wider text-[#3F6B4F] bg-[#3F6B4F]/10 px-2.5 py-1 rounded-full">
                       {fam.members_count ?? 0} Members
                     </span>
-                    <span className="text-xs text-[#78716C]">Active</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-[#78716C]">Active</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeletingFamily(fam);
+                        }}
+                        title="Oila shajarasini o'chirish"
+                        className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   <h3 className="font-serif text-xl font-bold text-[#1C1917] mt-3">{fam.name}</h3>
                   {fam.description && (
@@ -348,6 +378,20 @@ export const DashboardPage: React.FC = () => {
         people={pdfPeople}
         relationships={pdfRels}
         onOpenProModal={() => setIsProModalOpen(true)}
+      />
+
+      {/* Modal: Delete Family Confirmation */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deletingFamily)}
+        onClose={() => setDeletingFamily(null)}
+        onConfirm={async () => {
+          if (deletingFamily) {
+            await deleteFamilyMutation.mutateAsync(deletingFamily.id);
+          }
+        }}
+        title="Oila Shajarasini O'chirish"
+        message={`"${deletingFamily?.name}" oila shajarasini va unga tegishli barcha a'zolarni butunlay o'chirmoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi.`}
+        isLoading={deleteFamilyMutation.isPending}
       />
     </div>
   );
