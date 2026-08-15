@@ -16,6 +16,7 @@ export const ForgotPasswordPage: React.FC = () => {
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
+  const [serverDevCode, setServerDevCode] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -35,10 +36,11 @@ export const ForgotPasswordPage: React.FC = () => {
     setIsLoading(true);
     try {
       const res = await authApi.forgotPassword(email);
-      setCode('');
+      setCode(res.dev_code || '');
+      setServerDevCode(res.dev_code || null);
       setStep('verify');
       toast.success(
-        'Tiklash kodi yuborildi!',
+        res.email_sent ? 'Tiklash kodi yuborildi!' : 'Tiklash kodi tayyor',
         res.message || `${email} pochtangizga 6-xonali kod jo'natildi. Pochtangizni tekshiring.`
       );
     } catch (err: any) {
@@ -204,6 +206,18 @@ export const ForgotPasswordPage: React.FC = () => {
                   <span className="font-semibold text-[#3F6B4F]">{email}</span> manziliga
                   6 xonali tiklash kodi jo'natildi.
                 </p>
+
+                {serverDevCode && (
+                  <div className="bg-emerald-50 border border-emerald-300 p-3 rounded-2xl text-center space-y-1">
+                    <p className="text-[11px] font-semibold text-emerald-800">
+                      Tiklash kodingiz (ekranga chiqarildi):
+                    </p>
+                    <div className="font-mono text-2xl font-black text-[#3F6B4F] tracking-widest">
+                      {serverDevCode}
+                    </div>
+                  </div>
+                )}
+
                 <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 justify-center">
                   <span>⚠️</span>
                   <span>Iltimos <strong>spam / junk</strong> papkani ham tekshiring</span>

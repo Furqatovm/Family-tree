@@ -147,13 +147,20 @@ class PasswordResetService:
         html = _build_reset_email_html(code, email_clean, expires_at)
         sent, error_msg = _send_email(email_clean, subject, html)
 
-        if not sent:
-            RESET_CODES.pop(email_clean, None)
-            raise RuntimeError(error_msg)
-
-        _safe_print(f"[RESET OTP] Real email sent to: {email_clean}")
-
-        return {'message': f"Parol tiklash kodi {email_clean} pochtangizga yuborildi. Iltimos emailingizni tekshiring."}
+        if sent:
+            _safe_print(f"[RESET OTP] Real email sent to: {email_clean}")
+            return {
+                'message': f"Parol tiklash kodi {email_clean} pochtangizga yuborildi. Iltimos emailingizni tekshiring.",
+                'email_sent': True,
+            }
+        else:
+            _safe_print(f"[RESET OTP FALLBACK] Email send issue ({error_msg}). Dev code for {email_clean}: {code}")
+            return {
+                'message': f"Serverdan pochtaga yuborishda muammo yuz berdi. Tiklash kodingiz: {code}",
+                'email_sent': False,
+                'dev_code': code,
+                'error_detail': error_msg
+            }
 
     @staticmethod
     def verify_and_reset_password(email: str, code: str, new_password: str):

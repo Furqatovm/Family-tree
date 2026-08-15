@@ -23,7 +23,7 @@ export interface VerifyAndRegisterPayload extends RegisterPayload {
 }
 
 export const authApi = {
-  sendVerificationCode: async (email: string): Promise<{ message: string; dev_code?: string }> => {
+  sendVerificationCode: async (email: string): Promise<{ message: string; dev_code?: string; email_sent?: boolean }> => {
     const res = await api.post('/auth/send-code', { email });
     return res.data;
   },

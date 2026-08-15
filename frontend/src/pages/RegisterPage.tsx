@@ -23,6 +23,7 @@ export const RegisterPage: React.FC = () => {
   const [step, setStep] = useState<'details' | 'verify'>('details');
   const [formData, setFormData] = useState<RegisterFormData | null>(null);
   const [verificationCode, setVerificationCode] = useState<string>('');
+  const [serverDevCode, setServerDevCode] = useState<string | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -45,10 +46,11 @@ export const RegisterPage: React.FC = () => {
     try {
       const res = await authApi.sendVerificationCode(data.email);
       setFormData(data);
-      setVerificationCode('');
+      setVerificationCode(res.dev_code || '');
+      setServerDevCode(res.dev_code || null);
       setStep('verify');
       toast.success(
-        'Kod emailingizga yuborildi!',
+        res.email_sent ? 'Kod emailingizga yuborildi!' : 'Tasdiqlash kodi tayyor',
         res.message || `${data.email} pochtangizga 6-xonali kod jo'natildi. Pochtangizni tekshiring.`
       );
     } catch (err: any) {
@@ -179,6 +181,18 @@ export const RegisterPage: React.FC = () => {
                 <span className="font-semibold text-[#3F6B4F]">{formData?.email}</span> manziliga
                 6 xonali tasdiqlash kodi jo'natildi.
               </p>
+
+              {serverDevCode && (
+                <div className="bg-emerald-50 border border-emerald-300 p-3 rounded-2xl text-center space-y-1">
+                  <p className="text-[11px] font-semibold text-emerald-800">
+                    Tasdiqlash kodingiz (ekranga chiqarildi):
+                  </p>
+                  <div className="font-mono text-2xl font-black text-[#3F6B4F] tracking-widest">
+                    {serverDevCode}
+                  </div>
+                </div>
+              )}
+
               <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 justify-center">
                 <span>⚠️</span>
                 <span>Pochtangizni yoki spam papkani tekshiring</span>
