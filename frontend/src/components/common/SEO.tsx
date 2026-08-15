@@ -4,12 +4,14 @@ interface SEOProps {
   title?: string;
   description?: string;
   keywords?: string;
+  image?: string;
 }
 
 export const SEO: React.FC<SEOProps> = ({
   title = 'FamilyTree — Oila Shajarasi va Merosini Asrang',
   description = 'Interaktiv oila shajarasi yaratish, avlodlar tarixi, fotosuratlari, jonli Oila Xaritasi va PDF kitob eksporti tizimi.',
   keywords = 'oila shajarasi, nasabnoma, shajara, family tree uzbekistan, genealogy',
+  image = '/og-image.jpg',
 }) => {
   useEffect(() => {
     // Dynamic document title
@@ -44,7 +46,19 @@ export const SEO: React.FC<SEOProps> = ({
     if (ogDesc) {
       ogDesc.setAttribute('content', description);
     }
-  }, [title, description, keywords]);
+
+    // Dynamic OpenGraph Image
+    let ogImage = document.querySelector('meta[property="og:image"]');
+    if (ogImage) {
+      ogImage.setAttribute('content', image);
+    }
+
+    // Dynamic Twitter Image
+    let twitterImage = document.querySelector('meta[name="twitter:image"]');
+    if (twitterImage) {
+      twitterImage.setAttribute('content', image);
+    }
+  }, [title, description, keywords, image]);
 
   return null;
 };
