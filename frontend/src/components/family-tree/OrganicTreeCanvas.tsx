@@ -340,6 +340,24 @@ export const OrganicTreeCanvas: React.FC<OrganicTreeCanvasProps> = ({
                 />
               ))}
             </div>
+
+            {/* Unattached Nursery Section Indicator */}
+            {layout.unattachedCount > 0 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 545,
+                  transform: 'translateX(-50%)',
+                }}
+                className="pointer-events-none flex flex-col items-center gap-1 select-none"
+              >
+                <div className="w-80 border-t border-dashed border-amber-300" />
+                <span className="bg-amber-50/95 text-amber-900 border border-amber-200/90 px-3 py-0.5 rounded-full text-[10px] font-serif font-semibold flex items-center gap-1 shadow-sm">
+                  <span>🌱</span> Yangi a'zolar (Qarindoshlik bog'langanda daraxt shoxiga o'tadi)
+                </span>
+              </div>
+            )}
           </div>
         </AnimatePresence>
       </div>

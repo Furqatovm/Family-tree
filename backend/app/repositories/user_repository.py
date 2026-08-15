@@ -26,12 +26,14 @@ class UserRepository:
     @staticmethod
     def update(user, **kwargs):
         for key, value in kwargs.items():
-            if hasattr(user, key) and value is not None:
-                if key == 'password':
+            if hasattr(user, key):
+                if key == 'password' and value:
                     user.set_password(value)
-                elif key == 'email':
+                elif key == 'email' and value:
                     setattr(user, 'email', value.lower())
-                else:
+                elif key == 'avatar_url':
+                    setattr(user, 'avatar_url', value if value else None)
+                elif value is not None:
                     setattr(user, key, value)
         db.session.commit()
         return user

@@ -28,6 +28,56 @@ export const OrganicPersonNode: React.FC<OrganicPersonNodeProps> = ({
 
   const isRoot = generation === 1;
 
+  if (treeNode.isUnattached) {
+    // UNATTACHED / STANDALONE PERSON (Placed below the tree on the ground)
+    return (
+      <motion.div
+        initial={{ scale: 0, opacity: 0, y: 15 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{
+          delay: delay,
+          duration: 0.5,
+          type: 'spring',
+        }}
+        style={{
+          position: 'absolute',
+          left: x,
+          top: y,
+          transform: 'translate(-50%, -50%)',
+          zIndex: isSelected ? 40 : 25,
+        }}
+        onMouseEnter={() => onHover(person.id)}
+        onMouseLeave={() => onHover(null)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(person);
+        }}
+        className="flex flex-col items-center cursor-pointer group select-none"
+      >
+        <div className="relative">
+          <div
+            className={`w-14 h-14 rounded-2xl p-0.5 bg-gradient-to-br from-amber-200 via-stone-200 to-emerald-300 shadow-md group-hover:scale-110 transition-transform ${
+              isSelected ? 'ring-4 ring-emerald-500 ring-offset-2' : ''
+            }`}
+          >
+            <img
+              src={avatarUrl}
+              alt={person.first_name}
+              className="w-full h-full rounded-[14px] object-cover border border-white"
+            />
+          </div>
+          <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white shadow-sm flex items-center gap-0.5">
+            🌱 Yangi
+          </span>
+        </div>
+
+        <div className="mt-1.5 bg-white/95 text-[#1C1917] border border-amber-300 px-2.5 py-0.5 rounded-full text-[10px] font-serif font-bold shadow group-hover:bg-[#3F6B4F] group-hover:text-white group-hover:border-[#3F6B4F] transition-colors whitespace-nowrap text-center">
+          {person.first_name} {person.last_name}
+        </div>
+      </motion.div>
+    );
+  }
+
   // Fruit colors depending on generation for a vibrant fruit tree look
   const fruitGradients = [
     'from-[#3F6B4F] to-[#2D503A]', // Root

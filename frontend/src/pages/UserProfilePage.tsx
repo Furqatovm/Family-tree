@@ -58,6 +58,19 @@ export const UserProfilePage: React.FC = () => {
     }
   };
 
+  const handleRemoveAvatar = async () => {
+    setCustomAvatarUrl('');
+    setIsAvatarModalOpen(false);
+    try {
+      await authApi.updateProfile({ avatar_url: '' });
+      await refetchUser();
+      antMessage.success("Profil rasmi muvaffaqiyatli olib tashlandi!");
+    } catch (err: any) {
+      const errMsg = err?.response?.data?.error || "Rasmni o'chirishda xatolik";
+      antMessage.error(errMsg);
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -196,14 +209,26 @@ export const UserProfilePage: React.FC = () => {
             alt={`${user?.first_name} ${user?.last_name}`}
             className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-[#3F6B4F]/20 shadow-md"
           />
-          <button
-            type="button"
-            onClick={() => setIsAvatarModalOpen(true)}
-            title="Change Avatar"
-            className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-[#3F6B4F] text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-          >
-            <Camera className="w-4 h-4" />
-          </button>
+          <div className="absolute -bottom-1 -right-1 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setIsAvatarModalOpen(true)}
+              title="Rasmni o'zgartirish"
+              className="w-8 h-8 rounded-full bg-[#3F6B4F] text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+            {(user?.avatar_url || customAvatarUrl) && (
+              <button
+                type="button"
+                onClick={handleRemoveAvatar}
+                title="Rasmni o'chirish"
+                className="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 text-center sm:text-left space-y-2">
@@ -527,20 +552,37 @@ export const UserProfilePage: React.FC = () => {
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => {
-                if (customAvatarUrl.trim()) {
-                  handleSaveAvatar(customAvatarUrl.trim());
-                } else {
-                  setIsAvatarModalOpen(false);
-                }
-              }}
-            >
-              Saqlash
-            </Button>
+          <div className="flex items-center justify-between gap-3 pt-2">
+            {(user?.avatar_url || customAvatarUrl) ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="!text-rose-600 !border-rose-300 hover:!bg-rose-50 font-medium text-xs"
+                leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                onClick={handleRemoveAvatar}
+              >
+                Rasmni Olib Tashlash
+              </Button>
+            ) : <div />}
+
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setIsAvatarModalOpen(false)}>
+                Bekor qilish
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  if (customAvatarUrl.trim()) {
+                    handleSaveAvatar(customAvatarUrl.trim());
+                  } else {
+                    setIsAvatarModalOpen(false);
+                  }
+                }}
+              >
+                Saqlash
+              </Button>
+            </div>
           </div>
         </div>
       </AntModal>

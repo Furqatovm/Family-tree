@@ -14,6 +14,7 @@ export interface OrganicTreeNode {
   subTreeWidth: number;
   spouseOfId?: number;
   isSpouse?: boolean;
+  isUnattached?: boolean;
 }
 
 export interface OrganicLayoutResult {
@@ -21,18 +22,21 @@ export interface OrganicLayoutResult {
   rootNode: OrganicTreeNode | null;
   width: number;
   height: number;
+  unattachedCount: number;
 }
 
 /**
  * Calculates organic growing tree positions, Bezier curved branch paths,
- * branch thicknesses, and staggered growth animation delays for any arbitrary family structure.
+ * branch thicknesses, and staggered growth animation delays.
+ * Unattached/newly added members stay in a designated ground area below the tree
+ * until relationships are added to integrate them into branches.
  */
 export function calculateOrganicLayout(
   people: Person[],
   relationships: Relationship[]
 ): OrganicLayoutResult {
   if (!people || people.length === 0) {
-    return { nodes: [], rootNode: null, width: 800, height: 600 };
+    return { nodes: [], rootNode: null, width: 800, height: 600, unattachedCount: 0 };
   }
 
   const personById: Record<number, Person> = {};
@@ -93,20 +97,40 @@ export function calculateOrganicLayout(
     });
   });
 
-  // 2. Identify all Root Ancestors (people without registered parents)
-  const rootPeople = people.filter(
+  // 2. Classify connected members vs standalone/unattached members
+  const hasAnyRelationshipsInFamily = relationships.length > 0;
+
+  const connectedPeople: Person[] = [];
+  const unattachedPeople: Person[] = [];
+
+  people.forEach((p) => {
+    const hasRel =
+      (parentMap[p.id]?.length ?? 0) > 0 ||
+      (childrenMap[p.id]?.length ?? 0) > 0 ||
+      (spousesMap[p.id]?.length ?? 0) > 0 ||
+      (siblingsMap[p.id]?.length ?? 0) > 0;
+
+    // If family has no relationships yet and there's 1 person, that 1 person is the root founder
+    if (hasRel || (!hasAnyRelationshipsInFamily && people.length === 1)) {
+      connectedPeople.push(p);
+    } else {
+      unattachedPeople.push(p);
+    }
+  });
+
+  // 3. Identify Root Ancestors in connected pool
+  const rootPeople = connectedPeople.filter(
     (p) => (!parentMap[p.id] || parentMap[p.id].length === 0)
   );
 
-  // If every person has a parent (e.g. loops or cyclic mock), pick the oldest or first
-  const effectiveRoots = rootPeople.length > 0 ? rootPeople : [people[0]];
+  const effectiveRoots = rootPeople.length > 0 ? rootPeople : (connectedPeople.length > 0 ? [connectedPeople[0]] : []);
 
   const visited = new Set<number>();
   const NODE_SPACING_X = 220;
   const LEVEL_HEIGHT = 170;
-  const TRUNK_BASE_Y = 500;
+  const TRUNK_BASE_Y = 480;
 
-  // 3. Build recursive hierarchy
+  // 4. Build recursive hierarchy for connected members
   function buildHierarchyNode(person: Person, gen: number): OrganicTreeNode {
     visited.add(person.id);
 
@@ -126,8 +150,9 @@ export function calculateOrganicLayout(
       x: 0,
       y: 0,
       branchThickness: Math.max(4, 14 - gen * 2.2),
-      delay: gen * 0.45,
+      delay: gen * 0.4,
       subTreeWidth: 0,
+      isUnattached: false,
     };
   }
 
@@ -156,8 +181,8 @@ export function calculateOrganicLayout(
     }
   });
 
-  // If there are still unvisited people (e.g. disconnected nodes or orphan branches), build trees for them too!
-  people.forEach((p) => {
+  // Also include any other connected people that might be in secondary connected subgraphs
+  connectedPeople.forEach((p) => {
     if (!visited.has(p.id)) {
       const tree = buildHierarchyNode(p, 1);
       computeSubtreeWidth(tree);
@@ -165,7 +190,7 @@ export function calculateOrganicLayout(
     }
   });
 
-  // 4. Assign Coordinates (X, Y) and Bezier branch paths
+  // 5. Assign Coordinates (X, Y) and Bezier branch paths
   const allNodes: OrganicTreeNode[] = [];
 
   function assignPositions(
@@ -231,6 +256,26 @@ export function calculateOrganicLayout(
     currentRootX += rh.subTreeWidth;
   });
 
+  // 6. Position UNATTACHED / STANDALONE members at the bottom below the tree
+  const UNATTACHED_SPACING_X = 160;
+  const UNATTACHED_Y = TRUNK_BASE_Y + 130;
+
+  unattachedPeople.forEach((up, idx) => {
+    const unattachedX = (idx - (unattachedPeople.length - 1) / 2) * UNATTACHED_SPACING_X;
+    const standaloneNode: OrganicTreeNode = {
+      person: up,
+      children: [],
+      generation: 0,
+      x: unattachedX,
+      y: UNATTACHED_Y,
+      branchThickness: 0,
+      delay: 0.2,
+      subTreeWidth: UNATTACHED_SPACING_X,
+      isUnattached: true,
+    };
+    allNodes.push(standaloneNode);
+  });
+
   // Calculate total canvas bounds
   let minX = Infinity;
   let maxX = -Infinity;
@@ -252,5 +297,6 @@ export function calculateOrganicLayout(
     rootNode: rootHierarchies[0] || null,
     width,
     height,
+    unattachedCount: unattachedPeople.length,
   };
 }
