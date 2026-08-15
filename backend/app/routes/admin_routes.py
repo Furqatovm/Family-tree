@@ -68,6 +68,30 @@ def toggle_admin(user_id):
         'is_admin': user.is_admin
     }), 200
 
+@admin_bp.route('/users/<int:user_id>/plan', methods=['PUT'])
+@jwt_required()
+def set_user_plan(user_id):
+    current_user_id = int(get_jwt_identity())
+    if not verify_admin(current_user_id):
+        return jsonify({'error': 'Faqat Admin ushbu bo\'limga kira oladi'}), 403
+
+    data = request.get_json() or {}
+    plan_tier = data.get('plan_tier', 'free').lower().strip()
+    if plan_tier not in ['free', 'basic', 'pro']:
+        return jsonify({'error': 'Yaroqsiz tarif turi. Ruxsat berilgan: free, basic, pro'}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'Foydalanuvchi topilmadi'}), 404
+
+    user.plan_tier = plan_tier
+    db.session.commit()
+
+    return jsonify({
+        'message': f"{user.first_name} tarifi '{plan_tier.upper()}' ga o'zgartirildi",
+        'user': user.to_dict()
+    }), 200
+
 @admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user_id):

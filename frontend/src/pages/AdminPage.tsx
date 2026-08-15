@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, Users, GitFork, MapPin, Trash2, CheckCircle, ShieldAlert, Sparkles, RefreshCw, Layers, ExternalLink } from 'lucide-react';
-import { Table, Tag, message as antMessage, Tabs } from 'antd';
+import { Shield, Users, GitFork, MapPin, Trash2, CheckCircle, ShieldAlert, Sparkles, RefreshCw, Layers, ExternalLink, Crown } from 'lucide-react';
+import { Table, Tag, message as antMessage, Tabs, Select } from 'antd';
 import { adminApi, AdminUser, AdminFamily } from '../api/adminApi';
 import { familyApi } from '../api/familyApi';
 import { Button } from '../components/ui/Button';
@@ -43,6 +43,19 @@ export const AdminPage: React.FC = () => {
     },
     onError: (err: any) => {
       antMessage.error(err.response?.data?.error || 'Xatolik yuz berdi');
+    },
+  });
+
+  // Set User Plan Mutation
+  const setUserPlanMutation = useMutation({
+    mutationFn: ({ userId, planTier }: { userId: number; planTier: 'free' | 'basic' | 'pro' }) =>
+      adminApi.setUserPlan(userId, planTier),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      antMessage.success(data.message);
+    },
+    onError: (err: any) => {
+      antMessage.error(err.response?.data?.error || 'Tarifni o\'zgartirishda xatolik yuz berdi');
     },
   });
 
@@ -104,6 +117,46 @@ export const AdminPage: React.FC = () => {
         ) : (
           <Tag color="default">Standard User</Tag>
         ),
+    },
+    {
+      title: 'Tarif / Approve',
+      key: 'plan_tier',
+      render: (record: AdminUser) => (
+        <Select
+          value={record.is_admin ? 'pro' : (record.plan_tier || 'free')}
+          disabled={record.is_admin || setUserPlanMutation.isPending}
+          onChange={(newPlan: 'free' | 'basic' | 'pro') => {
+            setUserPlanMutation.mutate({ userId: record.id, planTier: newPlan });
+          }}
+          className="w-36 text-xs font-semibold"
+          options={[
+            {
+              value: 'free',
+              label: (
+                <span className="text-emerald-700 font-semibold flex items-center gap-1.5">
+                  🟢 FREE (1 ta shajara)
+                </span>
+              ),
+            },
+            {
+              value: 'basic',
+              label: (
+                <span className="text-blue-700 font-semibold flex items-center gap-1.5">
+                  🔵 BASIC (2 ta shajara)
+                </span>
+              ),
+            },
+            {
+              value: 'pro',
+              label: (
+                <span className="text-amber-700 font-bold flex items-center gap-1.5">
+                  👑 PRO (Cheksiz)
+                </span>
+              ),
+            },
+          ]}
+        />
+      ),
     },
     {
       title: 'Shajaralar Soni',

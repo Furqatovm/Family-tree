@@ -13,6 +13,7 @@ export interface AdminUser {
   first_name: string;
   last_name: string;
   is_admin: boolean;
+  plan_tier?: 'free' | 'basic' | 'pro';
   families_count: number;
   created_at: string;
 }
@@ -38,6 +39,10 @@ export const adminApi = {
   },
   toggleAdmin: async (userId: number): Promise<{ message: string; is_admin: boolean }> => {
     const res = await api.put(`/admin/users/${userId}/toggle-admin`);
+    return res.data;
+  },
+  setUserPlan: async (userId: number, planTier: 'free' | 'basic' | 'pro'): Promise<{ message: string; user: AdminUser }> => {
+    const res = await api.put(`/admin/users/${userId}/plan`, { plan_tier: planTier });
     return res.data;
   },
   deleteUser: async (userId: number): Promise<{ message: string }> => {

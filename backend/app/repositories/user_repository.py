@@ -16,7 +16,7 @@ class UserRepository:
             email=email.lower(),
             first_name=first_name,
             last_name=last_name,
-            plan_tier='pro'
+            plan_tier='free'
         )
         user.set_password(password)
         db.session.add(user)
