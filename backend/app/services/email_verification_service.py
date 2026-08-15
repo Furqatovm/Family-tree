@@ -92,12 +92,103 @@ def _build_email_html(code: str, email: str, expires_at: datetime) -> str:
 """
 
 
+def _send_via_resend(api_key: str, to_email: str, subject: str, html_body: str) -> tuple[bool, str]:
+    """Send email via Resend REST API (HTTPS port 443, never blocked by Render)."""
+    import json
+    import urllib.request
+    import urllib.error
+
+    try:
+        url = "https://api.resend.com/emails"
+        headers = {
+            "Authorization": f"Bearer {api_key.strip()}",
+            "Content-Type": "application/json",
+            "User-Agent": "FamilyTree/1.0"
+        }
+        sender = os.environ.get('MAIL_SENDER_EMAIL', '').strip() or 'FamilyTree <onboarding@resend.dev>'
+        if '@' not in sender:
+            sender = 'FamilyTree <onboarding@resend.dev>'
+
+        payload = {
+            "from": sender,
+            "to": [to_email],
+            "subject": subject,
+            "html": html_body
+        }
+        data = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(url, data=data, headers=headers, method='POST')
+        with urllib.request.urlopen(req, timeout=12) as response:
+            if response.status in [200, 201]:
+                _safe_print(f"[EMAIL] Sent via Resend API (HTTPS) to {to_email}")
+                return True, ""
+            return False, f"Resend API status {response.status}"
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode('utf-8', errors='ignore')
+        _safe_print(f"[ERROR] Resend API error: {err_body}")
+        return False, f"Resend API: {err_body}"
+    except Exception as e:
+        return False, f"Resend API error: {e}"
+
+
+def _send_via_brevo(api_key: str, to_email: str, subject: str, html_body: str) -> tuple[bool, str]:
+    """Send email via Brevo REST API (HTTPS port 443, never blocked by Render)."""
+    import json
+    import urllib.request
+    import urllib.error
+
+    try:
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "api-key": api_key.strip(),
+            "Content-Type": "application/json",
+            "User-Agent": "FamilyTree/1.0"
+        }
+        sender_email = os.environ.get('MAIL_SENDER_EMAIL', '').strip() or 'muhammadyusuffurqatov91@gmail.com'
+        payload = {
+            "sender": {"name": "FamilyTree", "email": sender_email},
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "htmlContent": html_body
+        }
+        data = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(url, data=data, headers=headers, method='POST')
+        with urllib.request.urlopen(req, timeout=12) as response:
+            if response.status in [200, 201, 202]:
+                _safe_print(f"[EMAIL] Sent via Brevo API (HTTPS) to {to_email}")
+                return True, ""
+            return False, f"Brevo API status {response.status}"
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode('utf-8', errors='ignore')
+        _safe_print(f"[ERROR] Brevo API error: {err_body}")
+        return False, f"Brevo API: {err_body}"
+    except Exception as e:
+        return False, f"Brevo API error: {e}"
+
+
 def _send_email(to_email: str, subject: str, html_body: str) -> tuple[bool, str]:
-    """Send email via Gmail SMTP with multi-strategy fallbacks (SSL 465, IPv4 resolution, STARTTLS 587)."""
+    """
+    Send email with multi-engine support:
+    1. Resend REST API (HTTPS 443) if RESEND_API_KEY is present
+    2. Brevo REST API (HTTPS 443) if BREVO_API_KEY is present
+    3. Direct Gmail SMTP (Port 465 SSL & Port 587 STARTTLS)
+    """
     import socket
     import ssl
 
-    # Read fresh from env with fallback to provided verified credentials
+    # 1. Check for HTTPS API keys (Fastest & 100% allowed on Render cloud free tier)
+    resend_key = os.environ.get('RESEND_API_KEY', '').strip()
+    if resend_key:
+        ok, err = _send_via_resend(resend_key, to_email, subject, html_body)
+        if ok:
+            return True, ""
+
+    brevo_key = os.environ.get('BREVO_API_KEY', '').strip()
+    if brevo_key:
+        ok, err = _send_via_brevo(brevo_key, to_email, subject, html_body)
+        if ok:
+            return True, ""
+
+    # 2. Try SMTP
     sender = os.environ.get('MAIL_SENDER_EMAIL', '').strip() or 'muhammadyusuffurqatov91@gmail.com'
     password = os.environ.get('MAIL_APP_PASSWORD', '').strip() or 'zhtdlkzgwmtjnvgd'
 
@@ -111,9 +202,9 @@ def _send_email(to_email: str, subject: str, html_body: str) -> tuple[bool, str]
     context = ssl.create_default_context()
     errors = []
 
-    # Strategy 1: Direct SSL on Port 465 (Most reliable for cloud hosts)
+    # Strategy A: Direct SSL on Port 465
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context, timeout=12) as server:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context, timeout=8) as server:
             server.login(sender, password)
             server.sendmail(sender, to_email, msg_str)
         _safe_print(f"[EMAIL] Sent via SMTP_SSL 465 to {to_email}")
@@ -125,12 +216,12 @@ def _send_email(to_email: str, subject: str, html_body: str) -> tuple[bool, str]
     except Exception as e:
         errors.append(f"Port 465: {e}")
 
-    # Strategy 2: IPv4-forced SSL on Port 465 (Bypasses IPv6 unreachable [Errno 101] on Render)
+    # Strategy B: IPv4-forced SSL on Port 465
     try:
         addr_info = socket.getaddrinfo('smtp.gmail.com', 465, socket.AF_INET, socket.SOCK_STREAM)
         if addr_info:
             ipv4 = addr_info[0][4][0]
-            with smtplib.SMTP_SSL(ipv4, 465, context=context, timeout=12) as server:
+            with smtplib.SMTP_SSL(ipv4, 465, context=context, timeout=8) as server:
                 server.login(sender, password)
                 server.sendmail(sender, to_email, msg_str)
             _safe_print(f"[EMAIL] Sent via IPv4 SSL ({ipv4}) to {to_email}")
@@ -142,9 +233,9 @@ def _send_email(to_email: str, subject: str, html_body: str) -> tuple[bool, str]
     except Exception as e:
         errors.append(f"IPv4 SSL: {e}")
 
-    # Strategy 3: Port 587 with STARTTLS
+    # Strategy C: Port 587 with STARTTLS
     try:
-        with smtplib.SMTP('smtp.gmail.com', 587, timeout=12) as server:
+        with smtplib.SMTP('smtp.gmail.com', 587, timeout=8) as server:
             server.ehlo()
             server.starttls(context=context)
             server.ehlo()
@@ -161,7 +252,7 @@ def _send_email(to_email: str, subject: str, html_body: str) -> tuple[bool, str]
 
     err_combined = " ; ".join(errors)
     _safe_print(f"[ERROR] Barcha SMTP ulanish usullari xatolik berdi: {err_combined}")
-    return False, f"Email jo'natishda xatolik yuz berdi: {err_combined}"
+    return False, f"Render bepul serverida SMTP portlari bloklangan. Resend yoki Brevo API kalitini o'rnating. ({err_combined})"
 
 
 def _safe_print(*args, **kwargs):
