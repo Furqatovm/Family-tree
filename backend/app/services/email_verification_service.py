@@ -172,6 +172,8 @@ class EmailVerificationService:
 
         return {
             'message': f"6-xonali tasdiqlash kodi {email_clean} manziliga yuborildi",
+            'dev_code': code,
+            'email_sent': email_sent
         }
 
     @staticmethod

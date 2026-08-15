@@ -60,6 +60,30 @@ def create_app(config_class=Config):
         except Exception:
             pass
 
+        # Auto-seed default Super Admin user (admin@example.com / admin123)
+        try:
+            admin_user = User.query.filter_by(email='admin@example.com').first()
+            if not admin_user:
+                admin_user = User(
+                    email='admin@example.com',
+                    first_name='Super',
+                    last_name='Admin',
+                    is_admin=True,
+                    plan_tier='pro'
+                )
+                admin_user.set_password('admin123')
+                db.session.add(admin_user)
+                db.session.commit()
+                print("[*] Default Super Admin auto-created: admin@example.com / admin123")
+            else:
+                if not admin_user.is_admin or admin_user.plan_tier != 'pro':
+                    admin_user.is_admin = True
+                    admin_user.plan_tier = 'pro'
+                    db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"[!] Super Admin auto-seed notice: {e}")
+
     @app.route('/health', methods=['GET'])
     def health():
         return {'status': 'healthy', 'service': 'family-tree-api'}, 200

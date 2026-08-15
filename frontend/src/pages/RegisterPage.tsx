@@ -48,11 +48,12 @@ export const RegisterPage: React.FC = () => {
       setFormData(data);
       if (res.dev_code) {
         setDevCode(res.dev_code);
+        setVerificationCode(res.dev_code);
       }
       setStep('verify');
       toast.success(
         'Kod emailingizga yuborildi!',
-        `${data.email} pochtangizga 6-xonali kod jo'natildi. Spam papkani ham tekshiring.`
+        `${data.email} pochtangizga 6-xonali kod jo'natildi.`
       );
     } catch (err: any) {
       const msg = err.response?.data?.error || 'Tasdiqlash kodini yuborishda xatolik yuz berdi';
@@ -184,8 +185,23 @@ export const RegisterPage: React.FC = () => {
               </p>
               <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 justify-center">
                 <span>⚠️</span>
-                <span>Iltimos <strong>spam / junk</strong> papkani ham tekshiring</span>
+                <span>Pochtangizni yoki spam papkani tekshiring</span>
               </div>
+              {devCode && (
+                <div className="bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs p-3 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-emerald-700 block">Tasdiqlash kodi:</span>
+                    <strong className="font-mono text-base tracking-widest text-emerald-900">{devCode}</strong>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setVerificationCode(devCode)}
+                    className="text-xs bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-semibold hover:bg-emerald-800 transition"
+                  >
+                    Avto-to'ldirish
+                  </button>
+                </div>
+              )}
             </div>
 
             <Input

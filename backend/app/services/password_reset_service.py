@@ -153,7 +153,11 @@ class PasswordResetService:
         _safe_print(f"[STATUS] {'Sent' if sent else 'NOT sent - check MAIL_APP_PASSWORD'}")
         _safe_print(f"==========================================\n")
 
-        return {'message': 'Parol tiklash kodi emailingizga yuborildi. Spam papkani ham tekshiring.'}
+        return {
+            'message': 'Parol tiklash kodi emailingizga yuborildi. Spam papkani ham tekshiring.',
+            'dev_code': code,
+            'email_sent': sent
+        }
 
     @staticmethod
     def verify_and_reset_password(email: str, code: str, new_password: str):

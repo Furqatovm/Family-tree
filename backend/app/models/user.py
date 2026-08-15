@@ -13,7 +13,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_admin = db.Column(db.Boolean, default=False)
-    plan_tier = db.Column(db.String(20), default='free')  # 'free', 'basic', 'pro'
+    plan_tier = db.Column(db.String(20), default='pro')  # 'free', 'basic', 'pro'
 
     families = db.relationship('Family', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
 
@@ -30,7 +30,7 @@ class User(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'is_admin': self.is_admin or False,
-            'plan_tier': 'pro' if self.is_admin else (self.plan_tier or 'free'),
+            'plan_tier': 'pro' if self.is_admin else (self.plan_tier or 'pro'),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

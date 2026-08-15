@@ -34,11 +34,14 @@ export const ForgotPasswordPage: React.FC = () => {
     setRateLimitMsg(null);
     setIsLoading(true);
     try {
-      await authApi.forgotPassword(email);
+      const res = await authApi.forgotPassword(email);
+      if (res.dev_code) {
+        setCode(res.dev_code);
+      }
       setStep('verify');
       toast.success(
         'Tiklash kodi yuborildi!',
-        `${email} pochtangizga 6-xonali kod jo'natildi. Spam papkani ham tekshiring.`
+        `${email} pochtangizga 6-xonali kod jo'natildi.`
       );
     } catch (err: any) {
       const status = err.response?.status;
