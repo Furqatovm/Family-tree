@@ -105,8 +105,11 @@ def _send_via_resend(api_key: str, to_email: str, subject: str, html_body: str) 
             "Content-Type": "application/json",
             "User-Agent": "FamilyTree/1.0"
         }
-        sender = os.environ.get('MAIL_SENDER_EMAIL', '').strip() or 'FamilyTree <onboarding@resend.dev>'
-        if '@' not in sender:
+        # Resend default testing domain is 'onboarding@resend.dev'.
+        # If user has a verified custom domain, they can set RESEND_FROM_EMAIL (e.g., info@familytree.uz).
+        # Otherwise, DO NOT use @gmail.com as Resend sender or it will be rejected.
+        sender = os.environ.get('RESEND_FROM_EMAIL', '').strip()
+        if not sender or '@gmail.com' in sender:
             sender = 'FamilyTree <onboarding@resend.dev>'
 
         payload = {
@@ -125,7 +128,14 @@ def _send_via_resend(api_key: str, to_email: str, subject: str, html_body: str) 
     except urllib.error.HTTPError as e:
         err_body = e.read().decode('utf-8', errors='ignore')
         _safe_print(f"[ERROR] Resend API error: {err_body}")
-        return False, f"Resend API: {err_body}"
+        try:
+            err_json = json.loads(err_body)
+            msg = err_json.get('message', err_body)
+            if 'testing emails' in msg.lower() or 'verify a domain' in msg.lower():
+                msg = f"Resend bepul tarifida faqat o'zingizning emailingizga yubora olasiz. Barcha emaillarga yuborish uchun resend.com/domains bo'limida domenni tasdiqlang. ({msg})"
+            return False, msg
+        except Exception:
+            return False, f"Resend API: {err_body}"
     except Exception as e:
         return False, f"Resend API error: {e}"
 
