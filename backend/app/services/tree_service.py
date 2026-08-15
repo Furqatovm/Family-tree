@@ -27,20 +27,33 @@ class TreeService:
         for rel in relationships:
             p1 = rel.person_1_id
             p2 = rel.person_2_id
+            rtype = rel.relationship_type
 
-            if rel.relationship_type == 'parent':
+            if rtype == 'parent':
                 if p2 in parents_map:
                     parents_map[p2].append(p1)
                 if p1 in children_map:
                     children_map[p1].append(p2)
-            elif rel.relationship_type == 'spouse':
+            elif rtype == 'child':
+                if p1 in parents_map:
+                    parents_map[p1].append(p2)
+                if p2 in children_map:
+                    children_map[p2].append(p1)
+            elif rtype == 'spouse':
                 if p1 in spouses_map and p2 not in spouses_map[p1]:
                     spouses_map[p1].append(p2)
                 if p2 in spouses_map and p1 not in spouses_map[p2]:
                     spouses_map[p2].append(p1)
 
-        # Derive sibling relationships: people sharing at least one parent
+        # Derive sibling relationships: people sharing at least one parent OR explicit sibling relations
         siblings_map = {p.id: set() for p in people}
+        for rel in relationships:
+            if rel.relationship_type == 'sibling':
+                if rel.person_1_id in siblings_map:
+                    siblings_map[rel.person_1_id].add(rel.person_2_id)
+                if rel.person_2_id in siblings_map:
+                    siblings_map[rel.person_2_id].add(rel.person_1_id)
+
         for person_id, p_list in parents_map.items():
             for parent_id in p_list:
                 for sibling_id in children_map.get(parent_id, []):
@@ -81,6 +94,14 @@ class TreeService:
                     'type': 'parentChildEdge',
                     'data': {'relationship_id': rel.id, 'type': 'parent'}
                 })
+            elif rel.relationship_type == 'child':
+                edges.append({
+                    'id': f"e-child-{rel.id}",
+                    'source': str(rel.person_2_id),
+                    'target': str(rel.person_1_id),
+                    'type': 'parentChildEdge',
+                    'data': {'relationship_id': rel.id, 'type': 'parent'}
+                })
             elif rel.relationship_type == 'spouse':
                 edges.append({
                     'id': f"e-spouse-{rel.id}",
@@ -88,6 +109,14 @@ class TreeService:
                     'target': str(rel.person_2_id),
                     'type': 'spouseEdge',
                     'data': {'relationship_id': rel.id, 'type': 'spouse'}
+                })
+            elif rel.relationship_type == 'sibling':
+                edges.append({
+                    'id': f"e-sibling-{rel.id}",
+                    'source': str(rel.person_1_id),
+                    'target': str(rel.person_2_id),
+                    'type': 'spouseEdge',
+                    'data': {'relationship_id': rel.id, 'type': 'sibling'}
                 })
 
         # Calculate max generations present

@@ -26,26 +26,33 @@ class RelationshipService:
         relationship_type = data['relationship_type']
 
         if person_1_id == person_2_id:
-            raise ValueError("A person cannot have a relationship with themselves")
+            raise ValueError("Bir shaxs o'zi bilan munosabat o'rnata olmaydi")
 
         p1 = PersonRepository.get_by_id(person_1_id)
         p2 = PersonRepository.get_by_id(person_2_id)
 
         if not p1 or p1.family_id != family_id:
-            raise ValueError("Person 1 is invalid or not in this family")
+            raise ValueError("1-shaxs topilmadi yoki bu oilaga tegishli emas")
         if not p2 or p2.family_id != family_id:
-            raise ValueError("Person 2 is invalid or not in this family")
+            raise ValueError("2-shaxs topilmadi yoki bu oilaga tegishli emas")
+
+        # Normalize 'child' to standard 'parent' representation (person_2 is parent of person_1)
+        if relationship_type == 'child':
+            person_1_id, person_2_id = person_2_id, person_1_id
+            relationship_type = 'parent'
 
         # Check existing relationship
         existing = RelationshipRepository.find_existing(family_id, person_1_id, person_2_id, relationship_type)
-        if existing:
-            raise ValueError("This relationship already exists")
+        if not existing and relationship_type in ['spouse', 'sibling', 'relative']:
+            existing = RelationshipRepository.find_existing(family_id, person_2_id, person_1_id, relationship_type)
 
-        # Cycle prevention for parent-child relationship:
-        # If person_1 is proposed parent of person_2, ensure person_1 is NOT already a descendant of person_2
+        if existing:
+            raise ValueError("Ushbu qarindoshlik rishtasi allaqachon mavjud")
+
+        # Cycle prevention for parent-child relationship
         if relationship_type == 'parent':
             if RelationshipService._is_descendant(family_id, possible_descendant_id=person_1_id, possible_ancestor_id=person_2_id):
-                raise ValueError("Invalid relationship: adding this parent relationship creates a cycle in the family tree")
+                raise ValueError("Xatolik: ushbu ota-ona munosabati shajarada aylanma (cycle) hosil qiladi")
 
         rel = RelationshipRepository.create(
             family_id=family_id,

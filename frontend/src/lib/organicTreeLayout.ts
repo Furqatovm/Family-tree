@@ -12,6 +12,8 @@ export interface OrganicTreeNode {
   branchThickness: number;
   delay: number;
   subTreeWidth: number;
+  spouseOfId?: number;
+  isSpouse?: boolean;
 }
 
 export interface OrganicLayoutResult {
@@ -23,7 +25,7 @@ export interface OrganicLayoutResult {
 
 /**
  * Calculates organic growing tree positions, Bezier curved branch paths,
- * branch thicknesses, and staggered growth animation delays.
+ * branch thicknesses, and staggered growth animation delays for any arbitrary family structure.
  */
 export function calculateOrganicLayout(
   people: Person[],
@@ -33,36 +35,81 @@ export function calculateOrganicLayout(
     return { nodes: [], rootNode: null, width: 800, height: 600 };
   }
 
-  // 1. Build parent-child relationships map
-  const childrenMap: Record<number, number[]> = {};
-  const parentMap: Record<number, number[]> = {};
-
-  relationships.forEach((rel) => {
-    if (rel.relationship_type === 'parent') {
-      const parentId = rel.person_1_id;
-      const childId = rel.person_2_id;
-      if (!childrenMap[parentId]) childrenMap[parentId] = [];
-      if (!childrenMap[parentId].includes(childId)) childrenMap[parentId].push(childId);
-
-      if (!parentMap[childId]) parentMap[childId] = [];
-      if (!parentMap[childId].includes(parentId)) parentMap[childId].push(parentId);
-    }
-  });
-
   const personById: Record<number, Person> = {};
   people.forEach((p) => (personById[p.id] = p));
 
-  // 2. Find root person (lowest generation or person with no parents in data)
-  let rootPerson = people.find((p) => !parentMap[p.id] || parentMap[p.id].length === 0);
-  if (!rootPerson) {
-    rootPerson = people[0];
-  }
+  // 1. Build relational maps
+  const childrenMap: Record<number, number[]> = {};
+  const parentMap: Record<number, number[]> = {};
+  const spousesMap: Record<number, number[]> = {};
+  const siblingsMap: Record<number, number[]> = {};
 
-  // 3. Build recursive hierarchy tree
+  relationships.forEach((rel) => {
+    let pId: number | null = null;
+    let cId: number | null = null;
+
+    if (rel.relationship_type === 'parent') {
+      pId = rel.person_1_id;
+      cId = rel.person_2_id;
+    } else if (rel.relationship_type === 'child') {
+      pId = rel.person_2_id;
+      cId = rel.person_1_id;
+    }
+
+    if (pId && cId) {
+      if (!childrenMap[pId]) childrenMap[pId] = [];
+      if (!childrenMap[pId].includes(cId)) childrenMap[pId].push(cId);
+
+      if (!parentMap[cId]) parentMap[cId] = [];
+      if (!parentMap[cId].includes(pId)) parentMap[cId].push(pId);
+    }
+
+    if (rel.relationship_type === 'spouse') {
+      if (!spousesMap[rel.person_1_id]) spousesMap[rel.person_1_id] = [];
+      if (!spousesMap[rel.person_1_id].includes(rel.person_2_id)) spousesMap[rel.person_1_id].push(rel.person_2_id);
+
+      if (!spousesMap[rel.person_2_id]) spousesMap[rel.person_2_id] = [];
+      if (!spousesMap[rel.person_2_id].includes(rel.person_1_id)) spousesMap[rel.person_2_id].push(rel.person_1_id);
+    }
+
+    if (rel.relationship_type === 'sibling') {
+      if (!siblingsMap[rel.person_1_id]) siblingsMap[rel.person_1_id] = [];
+      if (!siblingsMap[rel.person_1_id].includes(rel.person_2_id)) siblingsMap[rel.person_1_id].push(rel.person_2_id);
+
+      if (!siblingsMap[rel.person_2_id]) siblingsMap[rel.person_2_id] = [];
+      if (!siblingsMap[rel.person_2_id].includes(rel.person_1_id)) siblingsMap[rel.person_2_id].push(rel.person_1_id);
+    }
+  });
+
+  // Link children of spouse to both parents
+  people.forEach((p) => {
+    const spouses = spousesMap[p.id] || [];
+    spouses.forEach((sId) => {
+      const ownChildren = childrenMap[p.id] || [];
+      const spouseChildren = childrenMap[sId] || [];
+      const combined = Array.from(new Set([...ownChildren, ...spouseChildren]));
+      childrenMap[p.id] = combined;
+      childrenMap[sId] = combined;
+    });
+  });
+
+  // 2. Identify all Root Ancestors (people without registered parents)
+  const rootPeople = people.filter(
+    (p) => (!parentMap[p.id] || parentMap[p.id].length === 0)
+  );
+
+  // If every person has a parent (e.g. loops or cyclic mock), pick the oldest or first
+  const effectiveRoots = rootPeople.length > 0 ? rootPeople : [people[0]];
+
   const visited = new Set<number>();
+  const NODE_SPACING_X = 220;
+  const LEVEL_HEIGHT = 170;
+  const TRUNK_BASE_Y = 500;
 
+  // 3. Build recursive hierarchy
   function buildHierarchyNode(person: Person, gen: number): OrganicTreeNode {
     visited.add(person.id);
+
     const childIds = childrenMap[person.id] || [];
     const childrenNodes: OrganicTreeNode[] = [];
 
@@ -78,17 +125,11 @@ export function calculateOrganicLayout(
       generation: gen,
       x: 0,
       y: 0,
-      branchThickness: Math.max(3, 12 - gen * 2.5),
-      delay: gen * 0.7,
+      branchThickness: Math.max(4, 14 - gen * 2.2),
+      delay: gen * 0.45,
       subTreeWidth: 0,
     };
   }
-
-  const rootHierarchy = buildHierarchyNode(rootPerson, 1);
-
-  // 4. Calculate subtree widths to prevent overlapping
-  const NODE_SPACING_X = 220; // Minimum horizontal distance between sibling nodes
-  const LEVEL_HEIGHT = 160;  // Vertical distance between generation tiers
 
   function computeSubtreeWidth(node: OrganicTreeNode): number {
     if (node.children.length === 0) {
@@ -105,11 +146,27 @@ export function calculateOrganicLayout(
     return node.subTreeWidth;
   }
 
-  computeSubtreeWidth(rootHierarchy);
+  // Build forest of all root trees
+  const rootHierarchies: OrganicTreeNode[] = [];
+  effectiveRoots.forEach((rp) => {
+    if (!visited.has(rp.id) && personById[rp.id]) {
+      const tree = buildHierarchyNode(personById[rp.id], 1);
+      computeSubtreeWidth(tree);
+      rootHierarchies.push(tree);
+    }
+  });
 
-  // 5. Assign coordinates (X, Y)
+  // If there are still unvisited people (e.g. disconnected nodes or orphan branches), build trees for them too!
+  people.forEach((p) => {
+    if (!visited.has(p.id)) {
+      const tree = buildHierarchyNode(p, 1);
+      computeSubtreeWidth(tree);
+      rootHierarchies.push(tree);
+    }
+  });
+
+  // 4. Assign Coordinates (X, Y) and Bezier branch paths
   const allNodes: OrganicTreeNode[] = [];
-  const trunkBaseY = 500; // Base Y coordinate of tree root
 
   function assignPositions(
     node: OrganicTreeNode,
@@ -119,25 +176,22 @@ export function calculateOrganicLayout(
     pY?: number
   ) {
     node.x = currentX;
-    node.y = trunkBaseY - (depth - 1) * LEVEL_HEIGHT;
+    node.y = TRUNK_BASE_Y - (depth - 1) * LEVEL_HEIGHT;
     node.parentX = pX;
     node.parentY = pY;
 
-    // Create organic Bezier path from parent to child
+    // Organic Bezier curve from parent branch to child node
     if (pX != null && pY != null) {
       const startX = pX;
       const startY = pY;
       const endX = node.x;
       const endY = node.y;
 
-      // Natural organic curve calculation
-      const midY = (startY + endY) / 2;
-      const curveOffset = (endX - startX) * 0.3;
-
+      const curveOffset = (endX - startX) * 0.35;
       const control1X = startX + curveOffset;
-      const control1Y = startY - 40;
+      const control1Y = startY - 45;
       const control2X = endX - curveOffset;
-      const control2Y = endY + 40;
+      const control2Y = endY + 45;
 
       node.branchPath = `M ${startX} ${startY} C ${control1X} ${control1Y}, ${control2X} ${control2Y}, ${endX} ${endY}`;
     }
@@ -155,27 +209,29 @@ export function calculateOrganicLayout(
     }
   }
 
-  // Root position centered at X = 0
-  assignPositions(rootHierarchy, 0, 1);
+  // Layout all root trees side-by-side centered at X = 0
+  let totalForestWidth = 0;
+  rootHierarchies.forEach((rh) => (totalForestWidth += rh.subTreeWidth));
 
-  // Also include any disconnected people (orphans or separate families)
-  people.forEach((p) => {
-    if (!visited.has(p.id)) {
-      const orphanNode: OrganicTreeNode = {
-        person: p,
-        children: [],
-        generation: 1,
-        x: (allNodes.length + 1) * 240,
-        y: trunkBaseY,
-        branchThickness: 6,
-        delay: 0.5,
-        subTreeWidth: NODE_SPACING_X,
-      };
-      allNodes.push(orphanNode);
+  let currentRootX = -totalForestWidth / 2;
+  rootHierarchies.forEach((rh, idx) => {
+    const rootCenterX = currentRootX + rh.subTreeWidth / 2;
+    assignPositions(rh, rootCenterX, 1);
+
+    // If multiple root trees, connect each root to the central trunk base
+    if (rootHierarchies.length > 1 && rootCenterX !== 0) {
+      const trunkX = 0;
+      const trunkY = TRUNK_BASE_Y + 50;
+      rh.parentX = trunkX;
+      rh.parentY = trunkY;
+      rh.branchPath = `M ${trunkX} ${trunkY} C ${trunkX + (rootCenterX - trunkX) * 0.4} ${trunkY - 20}, ${rootCenterX - (rootCenterX - trunkX) * 0.3} ${rh.y + 30}, ${rootCenterX} ${rh.y}`;
+      rh.delay = idx * 0.2;
     }
+
+    currentRootX += rh.subTreeWidth;
   });
 
-  // Compute total canvas bounds
+  // Calculate total canvas bounds
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
@@ -193,7 +249,7 @@ export function calculateOrganicLayout(
 
   return {
     nodes: allNodes,
-    rootNode: rootHierarchy,
+    rootNode: rootHierarchies[0] || null,
     width,
     height,
   };
