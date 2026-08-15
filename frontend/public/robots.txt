@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /contact
+Allow: /login
+Allow: /register
+
+# Disallow private user panels
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /profile
+Disallow: /settings
+Disallow: /map
+Disallow: /families/
+
+Sitemap: https://familytree.uz/sitemap.xml
