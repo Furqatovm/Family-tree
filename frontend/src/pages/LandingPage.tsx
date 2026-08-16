@@ -950,8 +950,15 @@ export const LandingPage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false, amount: 0.2 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="bg-white p-8 rounded-3xl border-2 border-[#E7E5E4] shadow-subtle flex flex-col justify-between space-y-6 hover:border-[#3F6B4F]/50 hover:shadow-card transition-all relative"
+                className={`bg-white p-8 rounded-3xl border-2 shadow-subtle flex flex-col justify-between space-y-6 hover:shadow-card transition-all relative ${
+                  user?.plan_tier === 'basic' ? 'border-[#3F6B4F] ring-2 ring-[#3F6B4F]/20' : 'border-[#E7E5E4] hover:border-[#3F6B4F]/50'
+                }`}
               >
+                {user?.plan_tier === 'basic' && (
+                  <span className="absolute -top-3.5 right-6 bg-[#3F6B4F]/10 text-[#3F6B4F] border border-[#3F6B4F]/30 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm uppercase tracking-wider">
+                    Joriy Tarifingiz
+                  </span>
+                )}
                 <div className="space-y-4">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#78716C] block">Basic Plan</span>
                   <div>
@@ -975,13 +982,15 @@ export const LandingPage: React.FC = () => {
                 </div>
                 <Button
                   variant="outline"
-                  className="w-full justify-center !border-[#3F6B4F] !text-[#3F6B4F]"
+                  className={`w-full justify-center !border-[#3F6B4F] !text-[#3F6B4F] ${
+                    user?.plan_tier === 'basic' ? 'bg-[#3F6B4F]/5 font-bold' : ''
+                  }`}
                   onClick={() => {
                     setSelectedPlanTier('basic');
                     setIsUpgradeModalOpen(true);
                   }}
                 >
-                  Basic Xarid Qilish
+                  {user?.plan_tier === 'basic' ? 'Joriy Tarif (Basic)' : 'Basic Xarid Qilish'}
                 </Button>
               </motion.div>
 
@@ -994,7 +1003,7 @@ export const LandingPage: React.FC = () => {
                 className="bg-white p-8 rounded-3xl border-2 border-[#3F6B4F] shadow-card flex flex-col justify-between space-y-6 relative scale-[1.02] bg-gradient-to-b from-[#3F6B4F]/5 to-white"
               >
                 <span className="absolute -top-3.5 right-6 bg-[#3F6B4F] text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-sm uppercase tracking-wider">
-                  TAVSIYA ETILADI
+                  {user?.plan_tier === 'basic' ? 'PRO GA YANGILASH' : 'TAVSIYA ETILADI'}
                 </span>
                 <div className="space-y-4">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#3F6B4F] block">PRO Unlimited</span>
@@ -1028,7 +1037,7 @@ export const LandingPage: React.FC = () => {
                     setIsUpgradeModalOpen(true);
                   }}
                 >
-                  PRO Unlimited Xarid Qilish
+                  {user?.plan_tier === 'basic' ? 'PRO Unlimited ga Yangilash' : 'PRO Unlimited Xarid Qilish'}
                 </Button>
               </motion.div>
             </div>

@@ -129,6 +129,11 @@ export const ProUpgradeModal: React.FC<ProUpgradeModalProps> = ({
                 : 'border-[#E7E5E4] hover:border-[#3F6B4F]/40 bg-[#FAFAF9]'
             }`}
           >
+            {user?.plan_tier === 'basic' && (
+              <span className="absolute -top-3 right-4 bg-[#3F6B4F]/15 text-[#3F6B4F] border border-[#3F6B4F]/30 text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow-sm tracking-wider uppercase">
+                JORIY TARIF
+              </span>
+            )}
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#78716C]">Basic Plan</span>
               {selectedPlan === 'basic' && (
@@ -161,7 +166,7 @@ export const ProUpgradeModal: React.FC<ProUpgradeModalProps> = ({
             }`}
           >
             <span className="absolute -top-3 right-4 bg-[#3F6B4F] text-white text-[10px] font-bold px-3 py-0.5 rounded-full shadow-sm tracking-wider uppercase">
-              TAVSIYA ETILADI
+              {user?.plan_tier === 'basic' ? 'PRO GA YANGILASH' : 'TAVSIYA ETILADI'}
             </span>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#3F6B4F]">PRO Unlimited</span>
