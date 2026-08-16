@@ -48,8 +48,18 @@ export const Navbar: React.FC = () => {
                   <Button
                     variant={location.pathname.startsWith('/admin') ? 'primary' : 'outline'}
                     size="sm"
-                    className="!border-[#3F6B4F] !text-[#3F6B4F] font-bold"
-                    leftIcon={<Shield className="w-4 h-4 text-[#3F6B4F]" />}
+                    className={
+                      location.pathname.startsWith('/admin')
+                        ? '!bg-[#3F6B4F] !text-white font-bold shadow-sm'
+                        : '!border-[#3F6B4F] !text-[#3F6B4F] font-bold'
+                    }
+                    leftIcon={
+                      <Shield
+                        className={`w-4 h-4 ${
+                          location.pathname.startsWith('/admin') ? '!text-white' : 'text-[#3F6B4F]'
+                        }`}
+                      />
+                    }
                   >
                     Admin Dashboard
                   </Button>
@@ -186,7 +196,22 @@ export const Navbar: React.FC = () => {
               <div className="flex flex-col gap-2 pt-2 border-t border-[#E7E5E4]">
                 {user.is_admin && (
                   <Link to="/admin/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full justify-start !border-[#3F6B4F] !text-[#3F6B4F] font-bold" leftIcon={<Shield className="w-4 h-4" />}>
+                    <Button
+                      variant={location.pathname.startsWith('/admin') ? 'primary' : 'outline'}
+                      size="sm"
+                      className={`w-full justify-start font-bold ${
+                        location.pathname.startsWith('/admin')
+                          ? '!bg-[#3F6B4F] !text-white'
+                          : '!border-[#3F6B4F] !text-[#3F6B4F]'
+                      }`}
+                      leftIcon={
+                        <Shield
+                          className={`w-4 h-4 ${
+                            location.pathname.startsWith('/admin') ? '!text-white' : 'text-[#3F6B4F]'
+                          }`}
+                        />
+                      }
+                    >
                       Admin Dashboard
                     </Button>
                   </Link>
