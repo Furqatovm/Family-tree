@@ -907,42 +907,50 @@ export const LandingPage: React.FC = () => {
               </Link>
             </motion.div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-              {/* Free Plan */}
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="bg-white p-8 rounded-3xl border border-[#E7E5E4] shadow-subtle flex flex-col justify-between space-y-6 hover:shadow-card transition-all"
-              >
-                <div className="space-y-4">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#78716C] block">Free Plan</span>
-                  <div>
-                    <span className="font-serif text-4xl font-bold text-[#1C1917]">$0</span>
-                    <span className="text-xs text-[#78716C] ml-1">/ bepul</span>
+            <div
+              className={`grid grid-cols-1 gap-8 items-stretch ${
+                user?.plan_tier === 'basic'
+                  ? 'md:grid-cols-2 max-w-4xl mx-auto'
+                  : 'md:grid-cols-3'
+              }`}
+            >
+              {/* Free Plan (Hidden if user is on basic plan) */}
+              {user?.plan_tier !== 'basic' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.2 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  className="bg-white p-8 rounded-3xl border border-[#E7E5E4] shadow-subtle flex flex-col justify-between space-y-6 hover:shadow-card transition-all"
+                >
+                  <div className="space-y-4">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#78716C] block">Free Plan</span>
+                    <div>
+                      <span className="font-serif text-4xl font-bold text-[#1C1917]">$0</span>
+                      <span className="text-xs text-[#78716C] ml-1">/ bepul</span>
+                    </div>
+                    <p className="text-xs text-[#78716C] leading-relaxed">
+                      Boshlang'ich oilaviy shajarani sinab ko'rish uchun mo'ljallangan bepul imkoniyat.
+                    </p>
+                    <ul className="text-xs text-[#57534E] space-y-2.5 pt-2 border-t border-[#E7E5E4]">
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-[#3F6B4F]" /> Max 1 ta Family Tree
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-[#3F6B4F]" /> Max 10 ta Oila A'zosi
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-[#3F6B4F]" /> Daraxtni vizual ko'rish
+                      </li>
+                    </ul>
                   </div>
-                  <p className="text-xs text-[#78716C] leading-relaxed">
-                    Boshlang'ich oilaviy shajarani sinab ko'rish uchun mo'ljallangan bepul imkoniyat.
-                  </p>
-                  <ul className="text-xs text-[#57534E] space-y-2.5 pt-2 border-t border-[#E7E5E4]">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-[#3F6B4F]" /> Max 1 ta Family Tree
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-[#3F6B4F]" /> Max 10 ta Oila A'zosi
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-[#3F6B4F]" /> Daraxtni vizual ko'rish
-                    </li>
-                  </ul>
-                </div>
-                <Link to="/register" className="w-full">
-                  <Button variant="outline" className="w-full justify-center">
-                    Bepul Boshlash
-                  </Button>
-                </Link>
-              </motion.div>
+                  <Link to="/register" className="w-full">
+                    <Button variant="outline" className="w-full justify-center">
+                      Bepul Boshlash
+                    </Button>
+                  </Link>
+                </motion.div>
+              )}
 
               {/* Basic Plan ($1.99) */}
               <motion.div
