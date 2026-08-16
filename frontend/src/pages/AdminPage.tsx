@@ -18,6 +18,7 @@ export const AdminPage: React.FC = () => {
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [userPlanFilter, setUserPlanFilter] = useState<'all' | 'free' | 'basic' | 'pro'>('all');
   const [familySearchQuery, setFamilySearchQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch admin stats
   const { data: stats, isLoading: isLoadingStats } = useQuery({
@@ -288,6 +289,24 @@ export const AdminPage: React.FC = () => {
     );
   });
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ['admin-stats'] }),
+        queryClient.refetchQueries({ queryKey: ['admin-users'] }),
+        queryClient.refetchQueries({ queryKey: ['admin-families'] }),
+      ]);
+      antMessage.success('Ma\'lumotlar yangilandi!');
+    } catch {
+      antMessage.error('Ma\'lumotlarni yangilashda xatolik yuz berdi');
+    } finally {
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 700);
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-65px)] bg-[#FAFAF9] p-4 sm:p-8 max-w-7xl mx-auto space-y-8">
       {/* Header Banner */}
@@ -310,15 +329,11 @@ export const AdminPage: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => {
-            queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
-            queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-            queryClient.invalidateQueries({ queryKey: ['admin-families'] });
-            antMessage.success('Ma\'lumotlar yangilandi!');
-          }}
-          leftIcon={<RefreshCw className="w-4 h-4 text-[#3F6B4F]" />}
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          leftIcon={<RefreshCw className={`w-4 h-4 text-[#3F6B4F] transition-transform ${isRefreshing ? 'animate-spin' : ''}`} />}
         >
-          Ma'lumotlarni Yangilash
+          {isRefreshing ? 'Yangilanmoqda...' : 'Ma\'lumotlarni Yangilash'}
         </Button>
       </motion.div>
 
