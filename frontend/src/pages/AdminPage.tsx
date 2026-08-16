@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, Users, GitFork, MapPin, Trash2, CheckCircle, ShieldAlert, Sparkles, RefreshCw, Layers, ExternalLink, Crown } from 'lucide-react';
-import { Table, Tag, message as antMessage, Tabs, Select } from 'antd';
+import { Shield, Users, GitFork, MapPin, Trash2, CheckCircle, ShieldAlert, Sparkles, RefreshCw, Layers, ExternalLink, Crown, Search, X, Filter } from 'lucide-react';
+import { Table, Tag, message as antMessage, Tabs, Select, Input } from 'antd';
 import { adminApi, AdminUser, AdminFamily } from '../api/adminApi';
 import { familyApi } from '../api/familyApi';
 import { Button } from '../components/ui/Button';
@@ -15,6 +15,9 @@ export const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('users');
   const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
   const [deletingFamily, setDeletingFamily] = useState<AdminFamily | null>(null);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userPlanFilter, setUserPlanFilter] = useState<'all' | 'free' | 'basic' | 'pro'>('all');
+  const [familySearchQuery, setFamilySearchQuery] = useState('');
 
   // Fetch admin stats
   const { data: stats, isLoading: isLoadingStats } = useQuery({
@@ -260,6 +263,31 @@ export const AdminPage: React.FC = () => {
     },
   ];
 
+  const filteredUsers = users.filter((u) => {
+    const matchesQuery =
+      !userSearchQuery.trim() ||
+      `${u.first_name} ${u.last_name}`.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+      u.email.toLowerCase().includes(userSearchQuery.toLowerCase());
+
+    const matchesPlan =
+      userPlanFilter === 'all' ||
+      (userPlanFilter === 'pro' && (u.is_admin || u.plan_tier === 'pro')) ||
+      (!u.is_admin && (u.plan_tier || 'free') === userPlanFilter);
+
+    return matchesQuery && matchesPlan;
+  });
+
+  const filteredFamilies = families.filter((f) => {
+    if (!familySearchQuery.trim()) return true;
+    const query = familySearchQuery.toLowerCase();
+    return (
+      f.name.toLowerCase().includes(query) ||
+      (f.owner_name && f.owner_name.toLowerCase().includes(query)) ||
+      (f.owner_email && f.owner_email.toLowerCase().includes(query)) ||
+      (f.description && f.description.toLowerCase().includes(query))
+    );
+  });
+
   return (
     <div className="min-h-[calc(100vh-65px)] bg-[#FAFAF9] p-4 sm:p-8 max-w-7xl mx-auto space-y-8">
       {/* Header Banner */}
@@ -364,38 +392,111 @@ export const AdminPage: React.FC = () => {
               key: 'users',
               label: (
                 <span className="font-serif font-bold text-sm flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#3F6B4F]" /> Foydalanuvchilarni Boshqarish ({users.length})
+                  <Users className="w-4 h-4 text-[#3F6B4F]" /> Foydalanuvchilarni Boshqarish ({filteredUsers.length})
                 </span>
               ),
               children: (
-                <Table
-                  dataSource={users}
-                  columns={userColumns}
-                  rowKey="id"
-                  loading={isLoadingUsers}
-                  pagination={{ pageSize: 10 }}
-                  scroll={{ x: 650 }}
-                  className="pt-2"
-                />
+                <div className="space-y-4 pt-2">
+                  {/* Search & Filter Bar */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#FAFAF9] p-3.5 rounded-2xl border border-[#E7E5E4]">
+                    <div className="flex-1 max-w-md">
+                      <Input
+                        prefix={<Search className="w-4 h-4 text-[#78716C] mr-1.5" />}
+                        placeholder="Ism, familiya yoki email bo'yicha qidirish..."
+                        value={userSearchQuery}
+                        onChange={(e) => setUserSearchQuery(e.target.value)}
+                        allowClear
+                        size="middle"
+                        className="rounded-xl"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#78716C]">
+                        <Filter className="w-3.5 h-3.5 text-[#3F6B4F]" />
+                        <span>Tarif filtri:</span>
+                      </div>
+                      <Select
+                        value={userPlanFilter}
+                        onChange={(val) => setUserPlanFilter(val)}
+                        className="w-40 text-xs font-semibold"
+                        options={[
+                          { value: 'all', label: 'Barcha tariflar' },
+                          { value: 'free', label: '🟢 FREE' },
+                          { value: 'basic', label: '🔵 BASIC' },
+                          { value: 'pro', label: '👑 PRO' },
+                        ]}
+                      />
+                      {(userSearchQuery || userPlanFilter !== 'all') && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setUserSearchQuery('');
+                            setUserPlanFilter('all');
+                          }}
+                          className="text-xs text-[#78716C] hover:text-rose-600"
+                        >
+                          Tozalash
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  <Table
+                    dataSource={filteredUsers}
+                    columns={userColumns}
+                    rowKey="id"
+                    loading={isLoadingUsers}
+                    pagination={{ pageSize: 10, showTotal: (total) => `Jami: ${total} ta foydalanuvchi` }}
+                    scroll={{ x: 650 }}
+                  />
+                </div>
               ),
             },
             {
               key: 'families',
               label: (
                 <span className="font-serif font-bold text-sm flex items-center gap-2">
-                  <GitFork className="w-4 h-4 text-[#A67C52] rotate-180" /> Barcha Shajaralar ({families.length})
+                  <GitFork className="w-4 h-4 text-[#A67C52] rotate-180" /> Barcha Shajaralar ({filteredFamilies.length})
                 </span>
               ),
               children: (
-                <Table
-                  dataSource={families}
-                  columns={familyColumns}
-                  rowKey="id"
-                  loading={isLoadingFamilies}
-                  pagination={{ pageSize: 10 }}
-                  scroll={{ x: 650 }}
-                  className="pt-2"
-                />
+                <div className="space-y-4 pt-2">
+                  {/* Families Search Bar */}
+                  <div className="flex items-center justify-between gap-3 bg-[#FAFAF9] p-3.5 rounded-2xl border border-[#E7E5E4]">
+                    <div className="flex-1 max-w-md">
+                      <Input
+                        prefix={<Search className="w-4 h-4 text-[#78716C] mr-1.5" />}
+                        placeholder="Shajara nomi, egasi yoki email bo'yicha qidirish..."
+                        value={familySearchQuery}
+                        onChange={(e) => setFamilySearchQuery(e.target.value)}
+                        allowClear
+                        size="middle"
+                        className="rounded-xl"
+                      />
+                    </div>
+                    {familySearchQuery && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setFamilySearchQuery('')}
+                        className="text-xs text-[#78716C] hover:text-rose-600"
+                      >
+                        Tozalash
+                      </Button>
+                    )}
+                  </div>
+
+                  <Table
+                    dataSource={filteredFamilies}
+                    columns={familyColumns}
+                    rowKey="id"
+                    loading={isLoadingFamilies}
+                    pagination={{ pageSize: 10, showTotal: (total) => `Jami: ${total} ta shajara` }}
+                    scroll={{ x: 650 }}
+                  />
+                </div>
               ),
             },
           ]}

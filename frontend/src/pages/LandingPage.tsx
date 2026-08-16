@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GitFork, Heart, Sparkles, ArrowRight, ShieldCheck, Users, Search, Compass, MapPin, Play, RefreshCw, Plus, Minus, HelpCircle, Check, Crown } from 'lucide-react';
+import { GitFork, Heart, Sparkles, ArrowRight, ShieldCheck, Users, Search, Compass, MapPin, Play, RefreshCw, Plus, Minus, HelpCircle, Check, Crown, Send, MessageSquare } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { ProUpgradeModal } from '../components/ui/ProUpgradeModal';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../api/authApi';
 import { SEO } from '../components/common/SEO';
@@ -13,6 +14,8 @@ export const LandingPage: React.FC = () => {
   const [demoGrowthKey, setDemoGrowthKey] = React.useState<number>(0);
   const [openFaqIndex, setOpenFaqIndex] = React.useState<number | null>(0);
   const [isDemoLoading, setIsDemoLoading] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [selectedPlanTier, setSelectedPlanTier] = useState<'basic' | 'pro'>('pro');
 
   const isProActive = user?.is_admin || user?.plan_tier === 'pro';
 
@@ -970,11 +973,16 @@ export const LandingPage: React.FC = () => {
                     </li>
                   </ul>
                 </div>
-                <Link to="/register" className="w-full">
-                  <Button variant="outline" className="w-full justify-center !border-[#3F6B4F] !text-[#3F6B4F]">
-                    Basic Xarid Qilish
-                  </Button>
-                </Link>
+                <Button
+                  variant="outline"
+                  className="w-full justify-center !border-[#3F6B4F] !text-[#3F6B4F]"
+                  onClick={() => {
+                    setSelectedPlanTier('basic');
+                    setIsUpgradeModalOpen(true);
+                  }}
+                >
+                  Basic Xarid Qilish
+                </Button>
               </motion.div>
 
               {/* PRO Plan ($3.99) - Featured */}
@@ -1012,11 +1020,16 @@ export const LandingPage: React.FC = () => {
                     </li>
                   </ul>
                 </div>
-                <Link to="/register" className="w-full">
-                  <Button variant="primary" className="w-full justify-center bg-[#3F6B4F] hover:bg-[#345A42] font-bold shadow-md">
-                    PRO Unlimited Boshlash
-                  </Button>
-                </Link>
+                <Button
+                  variant="primary"
+                  className="w-full justify-center bg-[#3F6B4F] hover:bg-[#345A42] font-bold shadow-md"
+                  onClick={() => {
+                    setSelectedPlanTier('pro');
+                    setIsUpgradeModalOpen(true);
+                  }}
+                >
+                  PRO Unlimited Xarid Qilish
+                </Button>
               </motion.div>
             </div>
           )}
@@ -1217,12 +1230,20 @@ export const LandingPage: React.FC = () => {
               <p className="text-xs text-[#78716C] leading-relaxed">
                 Have questions or feedback? Our team is dedicated to helping you archive your family lineage.
               </p>
-              <div className="pt-1">
+              <div className="pt-1 flex flex-col gap-1.5">
                 <a
                   href="mailto:support@familytree.app"
                   className="text-xs font-semibold text-[#3F6B4F] hover:underline"
                 >
                   support@familytree.app
+                </a>
+                <a
+                  href="https://t.me/furqatov_m"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-[#3F6B4F] hover:underline flex items-center gap-1.5"
+                >
+                  <Send className="w-3 h-3 text-[#3F6B4F]" /> Telegram: @furqatov_m
                 </a>
               </div>
             </div>
@@ -1235,6 +1256,13 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </motion.footer>
+
+      {/* Pro Upgrade & Telegram Purchase Modal */}
+      <ProUpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        defaultPlan={selectedPlanTier}
+      />
     </div>
   );
 };

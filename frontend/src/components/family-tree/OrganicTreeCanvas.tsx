@@ -51,12 +51,13 @@ export const OrganicTreeCanvas: React.FC<OrganicTreeCanvasProps> = ({
     const treeHeight = maxY - minY + 260;
     const treeWidth = maxX - minX + 340;
 
-    const vh = typeof window !== 'undefined' ? window.innerHeight - 180 : 700;
-    const vw = typeof window !== 'undefined' ? window.innerWidth - 360 : 1000;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const vh = typeof window !== 'undefined' ? Math.max(300, window.innerHeight - (isMobile ? 120 : 180)) : 700;
+    const vw = typeof window !== 'undefined' ? Math.max(280, (isMobile ? window.innerWidth - 24 : window.innerWidth - 360)) : 1000;
 
     const fitScale = Math.min(
       1.0,
-      Math.max(0.6, Math.min(vh / Math.max(treeHeight, 350), vw / Math.max(treeWidth, 500)))
+      Math.max(0.35, Math.min(vh / Math.max(treeHeight, 300), vw / Math.max(treeWidth, 340)))
     );
 
     return { centerX: midX, centerY: midY, autoScale: fitScale };
@@ -67,6 +68,7 @@ export const OrganicTreeCanvas: React.FC<OrganicTreeCanvasProps> = ({
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const touchStartRef = useRef<{ x: number; y: number; distance?: number }>({ x: 0, y: 0 });
 
   // Auto-center and fit view when nodes load or layout updates
   useEffect(() => {
@@ -123,9 +125,44 @@ export const OrganicTreeCanvas: React.FC<OrganicTreeCanvasProps> = ({
     setIsDragging(false);
   };
 
+  // Touch handlers for mobile devices
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).closest('.group')) return;
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y });
+    } else if (e.touches.length === 2) {
+      setIsDragging(false);
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      touchStartRef.current.distance = Math.hypot(dx, dy);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1 && isDragging) {
+      setPan({
+        x: e.touches[0].clientX - dragStart.x,
+        y: e.touches[0].clientY - dragStart.y,
+      });
+    } else if (e.touches.length === 2 && touchStartRef.current.distance) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const currentDist = Math.hypot(dx, dy);
+      const ratio = currentDist / touchStartRef.current.distance;
+      setScale((s) => Math.min(2.0, Math.max(0.25, s * (ratio > 1 ? 1.025 : 0.975))));
+      touchStartRef.current.distance = currentDist;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    touchStartRef.current.distance = undefined;
+  };
+
   // Zoom handlers
-  const handleZoomIn = () => setScale((s) => Math.min(1.6, s + 0.15));
-  const handleZoomOut = () => setScale((s) => Math.max(0.3, s - 0.15));
+  const handleZoomIn = () => setScale((s) => Math.min(1.8, s + 0.15));
+  const handleZoomOut = () => setScale((s) => Math.max(0.25, s - 0.15));
   const handleResetView = () => {
     setScale(autoScale);
     setPan({ x: -centerX, y: -centerY });
@@ -137,7 +174,7 @@ export const OrganicTreeCanvas: React.FC<OrganicTreeCanvasProps> = ({
 
   const handleWheel = (e: React.WheelEvent) => {
     const zoomDelta = e.deltaY < 0 ? 0.08 : -0.08;
-    setScale((s) => Math.min(2.0, Math.max(0.3, s + zoomDelta)));
+    setScale((s) => Math.min(2.0, Math.max(0.25, s + zoomDelta)));
   };
 
   return (
@@ -147,46 +184,51 @@ export const OrganicTreeCanvas: React.FC<OrganicTreeCanvasProps> = ({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
       onWheel={handleWheel}
-      className="w-full h-full relative overflow-hidden bg-white select-none cursor-grab active:cursor-grabbing"
+      className="w-full h-full relative overflow-hidden bg-white select-none cursor-grab active:cursor-grabbing touch-none"
     >
       {/* Floating Canvas Controls */}
-      <div className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-[#E7E5E4] shadow-card">
+      <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-30 flex items-center gap-1 sm:gap-2 bg-white/95 backdrop-blur-md p-1 sm:p-1.5 rounded-2xl border border-[#E7E5E4] shadow-card">
         <Button
           variant="outline"
           size="sm"
-          className="text-xs"
+          className="text-[11px] sm:text-xs px-2 sm:px-3 py-1"
           leftIcon={<Play className="w-3.5 h-3.5 text-[#3F6B4F]" />}
           onClick={handleReplayAnimation}
           title="Replay Organic Tree Growth Animation"
         >
-          Replay Growth
+          <span className="hidden sm:inline">Replay Growth</span>
+          <span className="sm:hidden">Replay</span>
         </Button>
 
         <div className="h-4 w-px bg-[#E7E5E4]" />
 
         <button
           onClick={handleZoomIn}
-          className="p-2 rounded-xl hover:bg-stone-100 text-[#1C1917]"
+          className="p-1.5 sm:p-2 rounded-xl hover:bg-stone-100 text-[#1C1917]"
           title="Zoom In"
         >
-          <ZoomIn className="w-4 h-4" />
+          <ZoomIn className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
 
         <button
           onClick={handleZoomOut}
-          className="p-2 rounded-xl hover:bg-stone-100 text-[#1C1917]"
+          className="p-1.5 sm:p-2 rounded-xl hover:bg-stone-100 text-[#1C1917]"
           title="Zoom Out"
         >
-          <ZoomOut className="w-4 h-4" />
+          <ZoomOut className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
 
         <button
           onClick={handleResetView}
-          className="p-2 rounded-xl hover:bg-stone-100 text-[#1C1917]"
+          className="p-1.5 sm:p-2 rounded-xl hover:bg-stone-100 text-[#1C1917]"
           title="Reset View"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
       </div>
 

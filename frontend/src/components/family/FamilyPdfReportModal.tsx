@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal as AntModal } from 'antd';
-import { Printer, Crown, Lock, FileText, User, MapPin, Briefcase, Calendar, Heart, GitFork } from 'lucide-react';
+import { Printer, Crown, Lock, FileText, User, MapPin, Briefcase, Calendar, Heart, GitFork, Send } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Person, Family, Relationship } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -73,18 +73,35 @@ export const FamilyPdfReportModal: React.FC<FamilyPdfReportModalProps> = ({
               Butun oilangiz shajarasini foto-rasmlari, tarjimai hollari va batafsil ma'lumotlari bilan chop etiladigan PDF kitob shaklida yuklab olish uchun PRO tarifga o'ting.
             </p>
           </div>
-          <Button
-            variant="primary"
-            size="lg"
-            className="font-serif font-bold shadow-md"
-            leftIcon={<Crown className="w-4 h-4 text-amber-200" />}
-            onClick={() => {
-              onClose();
-              onOpenProModal();
-            }}
-          >
-            PRO Unlimited Tarifga O'tish ($3.99)
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Button
+              variant="primary"
+              size="lg"
+              className="font-serif font-bold shadow-md w-full sm:w-auto"
+              leftIcon={<Crown className="w-4 h-4 text-amber-200" />}
+              onClick={() => {
+                onClose();
+                onOpenProModal();
+              }}
+            >
+              PRO Tarifga O'tish
+            </Button>
+            <a
+              href="https://t.me/furqatov_m"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-block"
+            >
+              <Button
+                variant="outline"
+                size="lg"
+                className="font-serif font-semibold !border-[#3F6B4F] !text-[#3F6B4F] hover:!bg-[#3F6B4F]/5 w-full"
+                leftIcon={<Send className="w-4 h-4 text-[#3F6B4F]" />}
+              >
+                Telegram: @furqatov_m
+              </Button>
+            </a>
+          </div>
         </div>
       ) : (
         /* PRO Authorized PDF Printable View */

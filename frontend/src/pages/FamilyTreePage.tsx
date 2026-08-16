@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, GitFork, ArrowLeft, Filter, RefreshCw, Layers, FileText, Crown } from 'lucide-react';
+import { Search, Plus, GitFork, ArrowLeft, Filter, RefreshCw, Layers, FileText, Crown, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { treeApi } from '../api/treeApi';
 import { personApi, PersonPayload } from '../api/personApi';
 import { relationshipApi, RelationshipPayload } from '../api/relationshipApi';
@@ -32,6 +32,7 @@ export const FamilyTreePage: React.FC = () => {
   const [generationFilter, setGenerationFilter] = useState<number | 'all'>('all');
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
+  const [isMobileControlsOpen, setIsMobileControlsOpen] = useState(false);
 
   // Modal states
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
@@ -137,124 +138,141 @@ export const FamilyTreePage: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-65px)] flex flex-col md:flex-row overflow-hidden bg-[#FAFAF9]">
+    <div className="h-[calc(100vh-65px)] flex flex-col md:flex-row overflow-hidden bg-[#FAFAF9] relative">
       {/* LEFT SIDEBAR CONTROLS */}
-      <aside className="w-full md:w-80 bg-white border-r border-[#E7E5E4] flex flex-col p-4 space-y-5 z-20 shadow-subtle flex-shrink-0 max-h-[35vh] md:max-h-none overflow-y-auto">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<ArrowLeft className="w-4 h-4" />}
-            onClick={() => navigate('/dashboard')}
-          >
-            Dashboard
-          </Button>
+      <aside className="w-full md:w-80 bg-white border-b md:border-b-0 md:border-r border-[#E7E5E4] flex flex-col p-3 sm:p-4 z-20 shadow-subtle flex-shrink-0 md:max-h-none md:overflow-y-auto">
+        {/* Top Header Row (Always visible) */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<ArrowLeft className="w-4 h-4" />}
+              onClick={() => navigate('/dashboard')}
+              className="text-xs px-2.5 py-1"
+            >
+              Dashboard
+            </Button>
+            <button
+              onClick={() => refetch()}
+              className="p-1.5 rounded-xl text-[#78716C] hover:text-[#1C1917] hover:bg-[#FAFAF9]"
+              title="Refresh Tree"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Mobile Toggle Button */}
           <button
-            onClick={() => refetch()}
-            className="p-1.5 rounded-xl text-[#78716C] hover:text-[#1C1917] hover:bg-[#FAFAF9]"
-            title="Refresh Tree"
+            onClick={() => setIsMobileControlsOpen(!isMobileControlsOpen)}
+            className="md:hidden flex items-center gap-1.5 px-3 py-1 bg-[#3F6B4F]/10 text-[#3F6B4F] hover:bg-[#3F6B4F]/20 rounded-xl text-xs font-semibold transition-colors"
           >
-            <RefreshCw className="w-4 h-4" />
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span>{isMobileControlsOpen ? 'Yopish' : 'Sozlamalar'}</span>
+            {isMobileControlsOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
 
-        <div>
-          <h2 className="font-serif text-xl font-bold text-[#1C1917]">
-            {treeData?.family?.name || 'Family Tree'}
-          </h2>
-          <p className="text-xs text-[#78716C] mt-0.5">
-            {treeData?.people?.length || 0} family members recorded
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full mt-3 !border-[#3F6B4F] !text-[#3F6B4F] font-serif font-bold text-xs"
-            leftIcon={<FileText className="w-4 h-4 text-[#3F6B4F]" />}
-            rightIcon={!(user?.is_admin || user?.plan_tier === 'pro') ? <Crown className="w-3.5 h-3.5 text-amber-600" /> : undefined}
-            onClick={() => setIsPdfModalOpen(true)}
-          >
-            📄 PDF Kitob Eksport {!(user?.is_admin || user?.plan_tier === 'pro') && '(PRO)'}
-          </Button>
-        </div>
-
-        {/* Search Input */}
-        <Input
-          placeholder="Search person..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          leftIcon={<Search className="w-4 h-4" />}
-        />
-
-        {/* Generation Depth Filters */}
-        <div className="space-y-1.5">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-[#78716C] flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-[#3F6B4F]" /> Generation Depth
-          </label>
-          <div className="grid grid-cols-3 gap-1.5">
-            <button
-              onClick={() => setGenerationFilter('all')}
-              className={`py-1.5 text-xs font-medium rounded-xl border transition-colors ${
-                generationFilter === 'all'
-                  ? 'bg-[#3F6B4F] text-white border-[#3F6B4F]'
-                  : 'bg-white text-[#78716C] border-[#E7E5E4] hover:bg-[#FAFAF9]'
-              }`}
+        {/* Collapsible Panel on Mobile, Always open on Desktop */}
+        <div className={`space-y-4 pt-3 ${isMobileControlsOpen ? 'block' : 'hidden md:block'}`}>
+          <div>
+            <h2 className="font-serif text-lg sm:text-xl font-bold text-[#1C1917]">
+              {treeData?.family?.name || 'Family Tree'}
+            </h2>
+            <p className="text-xs text-[#78716C] mt-0.5">
+              {treeData?.people?.length || 0} ta oila a'zosi qayd etilgan
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full mt-2.5 !border-[#3F6B4F] !text-[#3F6B4F] font-serif font-bold text-xs"
+              leftIcon={<FileText className="w-4 h-4 text-[#3F6B4F]" />}
+              rightIcon={!(user?.is_admin || user?.plan_tier === 'pro') ? <Crown className="w-3.5 h-3.5 text-amber-600" /> : undefined}
+              onClick={() => setIsPdfModalOpen(true)}
             >
-              All Gens
-            </button>
-            <button
-              onClick={() => setGenerationFilter(3)}
-              className={`py-1.5 text-xs font-medium rounded-xl border transition-colors ${
-                generationFilter === 3
-                  ? 'bg-[#3F6B4F] text-white border-[#3F6B4F]'
-                  : 'bg-white text-[#78716C] border-[#E7E5E4] hover:bg-[#FAFAF9]'
-              }`}
-            >
-              3 Gens
-            </button>
-            <button
-              onClick={() => setGenerationFilter(5)}
-              className={`py-1.5 text-xs font-medium rounded-xl border transition-colors ${
-                generationFilter === 5
-                  ? 'bg-[#3F6B4F] text-white border-[#3F6B4F]'
-                  : 'bg-white text-[#78716C] border-[#E7E5E4] hover:bg-[#FAFAF9]'
-              }`}
-            >
-              5 Gens
-            </button>
+              📄 PDF Kitob Eksport {!(user?.is_admin || user?.plan_tier === 'pro') && '(PRO)'}
+            </Button>
           </div>
-        </div>
 
-        {/* Action Triggers */}
-        <div className="space-y-2 pt-2 border-t border-[#E7E5E4]">
-          <Button
-            variant="primary"
-            className="w-full"
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={() => setIsAddPersonOpen(true)}
-          >
-            Add Person
-          </Button>
+          {/* Search Input */}
+          <Input
+            placeholder="Shaxslarni qidirish..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            leftIcon={<Search className="w-4 h-4" />}
+          />
 
-          <Button
-            variant="secondary"
-            className="w-full"
-            leftIcon={<GitFork className="w-4 h-4" />}
-            onClick={() => setIsAddRelationshipOpen(true)}
-            disabled={!treeData?.people || treeData.people.length < 2}
-          >
-            Add Relationship
-          </Button>
-        </div>
-
-        {/* Error Notification Alert */}
-        {errorMessage && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl flex items-center justify-between">
-            <span>{errorMessage}</span>
-            <button onClick={() => setErrorMessage(null)} className="font-bold ml-2">
-              ×
-            </button>
+          {/* Generation Depth Filters */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#78716C] flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#3F6B4F]" /> Avlodlar chuqurligi
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                onClick={() => setGenerationFilter('all')}
+                className={`py-1.5 text-xs font-medium rounded-xl border transition-colors ${
+                  generationFilter === 'all'
+                    ? 'bg-[#3F6B4F] text-white border-[#3F6B4F]'
+                    : 'bg-white text-[#78716C] border-[#E7E5E4] hover:bg-[#FAFAF9]'
+                }`}
+              >
+                Barchasi
+              </button>
+              <button
+                onClick={() => setGenerationFilter(3)}
+                className={`py-1.5 text-xs font-medium rounded-xl border transition-colors ${
+                  generationFilter === 3
+                    ? 'bg-[#3F6B4F] text-white border-[#3F6B4F]'
+                    : 'bg-white text-[#78716C] border-[#E7E5E4] hover:bg-[#FAFAF9]'
+                }`}
+              >
+                3 Avlod
+              </button>
+              <button
+                onClick={() => setGenerationFilter(5)}
+                className={`py-1.5 text-xs font-medium rounded-xl border transition-colors ${
+                  generationFilter === 5
+                    ? 'bg-[#3F6B4F] text-white border-[#3F6B4F]'
+                    : 'bg-white text-[#78716C] border-[#E7E5E4] hover:bg-[#FAFAF9]'
+                }`}
+              >
+                5 Avlod
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Action Triggers */}
+          <div className="space-y-2 pt-2 border-t border-[#E7E5E4]">
+            <Button
+              variant="primary"
+              className="w-full"
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => setIsAddPersonOpen(true)}
+            >
+              Shaxs Qo'shish
+            </Button>
+
+            <Button
+              variant="secondary"
+              className="w-full"
+              leftIcon={<GitFork className="w-4 h-4" />}
+              onClick={() => setIsAddRelationshipOpen(true)}
+              disabled={!treeData?.people || treeData.people.length < 2}
+            >
+              Qarindoshlik Bog'lash
+            </Button>
+          </div>
+
+          {/* Error Notification Alert */}
+          {errorMessage && (
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl flex items-center justify-between">
+              <span>{errorMessage}</span>
+              <button onClick={() => setErrorMessage(null)} className="font-bold ml-2">
+                ×
+              </button>
+            </div>
+          )}
+        </div>
       </aside>
 
       {/* CENTER INTERACTIVE REACT FLOW CANVAS */}

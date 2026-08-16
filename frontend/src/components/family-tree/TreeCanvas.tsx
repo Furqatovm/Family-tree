@@ -91,28 +91,30 @@ export const TreeCanvas: React.FC<TreeCanvasProps> = ({
   return (
     <div className="w-full h-full relative bg-[#FAFAF9]">
       {/* Top Floating View Switcher */}
-      <div className="absolute top-4 left-4 z-30 flex items-center gap-1 bg-white/90 backdrop-blur-md p-1 rounded-2xl border border-[#E7E5E4] shadow-card">
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-30 flex items-center gap-1 bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-[#E7E5E4] shadow-card">
         <button
           onClick={() => setViewMode('organic')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-semibold transition-all ${
             viewMode === 'organic'
               ? 'bg-[#3F6B4F] text-white shadow-sm'
               : 'text-[#78716C] hover:text-[#1C1917] hover:bg-stone-100'
           }`}
         >
           <Sprout className="w-3.5 h-3.5" />
-          Growing Tree View
+          <span className="hidden xs:inline sm:inline">Growing Tree</span>
+          <span className="xs:hidden sm:hidden">Tree</span>
         </button>
         <button
           onClick={() => setViewMode('diagram')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-semibold transition-all ${
             viewMode === 'diagram'
               ? 'bg-[#3F6B4F] text-white shadow-sm'
               : 'text-[#78716C] hover:text-[#1C1917] hover:bg-stone-100'
           }`}
         >
           <LayoutGrid className="w-3.5 h-3.5" />
-          Compact Diagram
+          <span className="hidden xs:inline sm:inline">Diagram</span>
+          <span className="xs:hidden sm:hidden">Grid</span>
         </button>
       </div>
 

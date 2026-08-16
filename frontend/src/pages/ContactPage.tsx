@@ -161,6 +161,23 @@ ${data.message}
                 </div>
 
                 <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-2xl bg-[#3F6B4F]/10 text-[#3F6B4F] flex items-center justify-center flex-shrink-0">
+                    <Send className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-xs text-[#78716C] uppercase tracking-wider">Telegram Direct & PRO</h4>
+                    <a
+                      href="https://t.me/furqatov_m"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-bold text-[#3F6B4F] hover:underline"
+                    >
+                      @furqatov_m
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-5 h-5" />
                   </div>
